@@ -287,7 +287,7 @@ def borradofacil(archivolee, Q=[5,10,15,20,25,30],Mejora=[False], Previo=[True],
 
 def borradocontablas(archivolee, Q=[5,10,15,20,25,30],Mejora=[False], Previo=[True], Partir=[True], archivogenera="salida.csv"):
         # reader=open("D:/satsolver/"+archivolee,"r")
-        reader=open("archivolee,"r")
+        reader=open(archivolee,"r")
         writer=open(archivogenera,"w")
         writer.write("Problema;Variable;Claúsulas;Q;MejoraLocal;Previo;PartirVars;TLectura;TBúsqueda;TTotal;SAT\n")
         ttotal = 0
