@@ -391,15 +391,11 @@ class varpot:
             lista = res.get(abs(v))+res.getd(abs(v))
             for p in lista:
                 res.eliminar(p)
-            print("empiezo a reduce e insertar")
             for p in lista:
-                print(v,p.listavar)
                 q = p.reduce({v})
-                print(q.listavar)
                
                 res.insertarb2(q)
 
-            print("termino")
              
             return res
             
@@ -554,7 +550,7 @@ class varpot:
 
 
                         
-        def insertarb2(self,p):
+        def insertarb2(self,p, Q = 20):
             if p.contradict():
                 self.anula()
                 return []
@@ -563,32 +559,39 @@ class varpot:
             if p.trivial():
                 return []
 
-         
+            n = len(p.listavar)
+
             svar = set(p.listavar)
 
             for v in p.listavar:
                 if v in self.tablad:
                     for q in self.tablad[v]:
-                        if set(q.listavar)<= svar:
+                        if len(q.listavar) <= n and set(q.listavar)<= svar:
                             h = q.combina(p,inplace=False)
                             h.borra([v], inplace=True)
                             return self.insertarb2(h)
-            n = len(p.listavar)
             lista = []
+            lista2 = []
             for v in p.listavar:
                 if v in self.tabla: 
                     for q in self.tabla[v]:
-                        if q not in lista:
+                        if len(q.listavar)==n and q not in lista:
                             lista.append(q)
+                        elif len(q.listavar)<n and q not in lista2:
+                            lista2.append(q)
 
-            le = filter(lambda x: len(x.listavar)==n, lista)
 
-            for q in le:
+            for q in lista:
                 if  set(q.listavar)==svar:
                     p.combina(q, inplace=True)
                     self.eliminar(q)
 
-            if len(p.listavar)<=20:
+            if len(p.listavar)<=Q:
+                for q in lista2:
+                    if set(q.listavar)<= svar:
+                        p.combina(q,inplace=True)
+
+
                 for v in p.listavar:
                     if p.checkdetermi(v):
                         var = v
@@ -606,11 +609,11 @@ class varpot:
                             for v in p.listavar:
                                 if v in self.tablad:
                                     for q in self.tablad[v]:
-                                        if q not in lista:
+                                        if len(q.listavar) >n and q not in lista:
                                             lista.append(q)
                                 if v in self.tabla: 
                                     for q in self.tabla[v]:
-                                        if q not in lista:
+                                        if len(q.listavar) >n and q not in lista:
                                             lista.append(q)
                             ins = []
                             for q in lista:
@@ -638,7 +641,9 @@ class varpot:
                                             self.tabla[v] = [p]
                         return res
             
-            
+
+
+
             res= [p.listavar]
             for v in p.listavar:
                 if v in self.tabla:

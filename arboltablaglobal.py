@@ -85,9 +85,9 @@ def calculaglobal(rela, conf = [], L=15, M=25):
         rela.minid(5)
         
         if len(vars)<= 80:
-            val = rela.borraf(7)
+            val = rela.borraf(10)
         else:
-            val = rela.borraf(7)
+            val = rela.borraf(10)
 
         vars = rela.getvars()
         print(len(vars))
