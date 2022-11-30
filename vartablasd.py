@@ -1067,8 +1067,21 @@ class varpot:
 
         def getmax(self, proh = set()):
             pos = set(self.getvars())-proh
+
+            bue = dict()
+
+            for x in pos:
+                bue[x] = 0.0
             
-            return  max(pos,key = lambda x: len(self.get(x)) + len(self.getd(x)) )
+            for v in self.getvars():
+                if v in self.tablad:
+                    for p in self.tablad[v]:
+                        n = len(p.listavar)
+                        for y in p.listavar:
+                            bue[y] += 1/n
+
+                
+            return  max(bue,key = bue.get )
                 
 
 
