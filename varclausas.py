@@ -266,7 +266,7 @@ writer=open("output1","w")
 writer.write("Problem;Time\n")
 ttotal = 0
 signal.signal(signal.SIGALRM, signal_handler)
-signal.alarm(6)
+signal.alarm(600)
 
 # i=0
 for linea in reader:
