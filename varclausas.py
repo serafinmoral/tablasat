@@ -9,6 +9,11 @@ from utils import *
 from SimpleClausulas import *
 from time import *
 from varclausas import *
+import signal
+
+def signal_handler(signum, frame):
+    raise Exception("Tiempo limite")
+
 
     
 def leeArchivoGlobal(Archivo):
@@ -260,6 +265,9 @@ reader=open("list0","r")
 writer=open("output1","w")
 writer.write("Problem;Time\n")
 ttotal = 0
+signal.signal(signal.SIGALRM, signal_handler)
+signal.alarm(600)
+
 # i=0
 for linea in reader:
     # i=i+1
@@ -276,7 +284,10 @@ for linea in reader:
 
         dp = varclau()
         dp.fromSimple(info)
-        dp.borra()
+        try:
+            dp.borra()
+        except Exception:
+            print("Tiempo limite")
         t2= time()
         
                             
