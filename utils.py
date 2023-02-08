@@ -53,8 +53,13 @@ def partev(lista,v):
         if p.trivial():
             bor.append(p)
             # print("trivial antes ")
+<<<<<<< HEAD
              
         elif v in p.listavar:
+=======
+            break 
+        if v in p.listavar:
+>>>>>>> 9f739819c55ac3903f186ab9db280b8959a2b66c
             l = p.descomponev(v)
             if len(l)>1:
                 for q in l:
@@ -168,6 +173,35 @@ def ordenaycombinaincluidas(lista,rela, borrar = True, inter=False):
         i+=1
     lista.reverse()
 
+<<<<<<< HEAD
+
+def combinaincluidas(lista, K=0):
+    
+    lista.sort(key = lambda x : - len(x.listavar) )
+
+    
+    i=0
+    while i <len(lista)-1:
+        
+        j = i+1
+        while j < len(lista):
+            # print("lista, i, j", len(lista), i, j)
+            if len(set(lista[j].listavar) - set(lista[i].listavar))<=K:
+                p = lista[i]
+                q = lista[j]
+                t = p.combina(q)
+                lista[i] = t
+                
+                lista.remove(q)
+                
+            else:
+                j+=1
+        
+        i+=1
+    lista.reverse()
+
+=======
+>>>>>>> 9f739819c55ac3903f186ab9db280b8959a2b66c
 def agrupatam(lista):
     
     lista.sort(key = lambda x : - len(x.listavar) )
@@ -204,6 +238,7 @@ def agrupatam(lista):
         i+=1
     lista.reverse()
 
+<<<<<<< HEAD
 def agrupal(lista, Q):
     listac = lista.copy()
     res = []
@@ -262,6 +297,9 @@ def agrupal(lista, Q):
 
 
     return res
+=======
+
+>>>>>>> 9f739819c55ac3903f186ab9db280b8959a2b66c
 
 def createclusters (lista):
     listasets = []
@@ -308,7 +346,11 @@ def createclusters (lista):
 
 
 
+<<<<<<< HEAD
 def marginaliza(lista, var, partirin, M=30, Q=1):
+=======
+def marginaliza(lista, var, partirin, M=30, Q=20):
+>>>>>>> 9f739819c55ac3903f186ab9db280b8959a2b66c
     if not lista:
         return (True,[],[])
     if partirin: #EEDM
@@ -413,7 +455,11 @@ def marginaliza(lista, var, partirin, M=30, Q=1):
                 sizes += 2**len(xx)
 
             lista = []
+<<<<<<< HEAD
             if len(vars) <=Q:
+=======
+            if 2**(len(vars)-1) <= sizes and len(vars) <=31:
+>>>>>>> 9f739819c55ac3903f186ab9db280b8959a2b66c
                 print ("global total ")
                 r = nodoTabla([])
                
@@ -434,11 +480,14 @@ def marginaliza(lista, var, partirin, M=30, Q=1):
                     return (True,[con],[])
 
                 if not r.trivial():
+<<<<<<< HEAD
                         print("entro Units")
                         t = r.calculaunit()
                         print("salgo units")
                         if t:
                             print("unidades ", t)
+=======
+>>>>>>> 9f739819c55ac3903f186ab9db280b8959a2b66c
                         res.append(r)
             
             elif len(vars)<= Q:
@@ -500,6 +549,7 @@ def marginaliza(lista, var, partirin, M=30, Q=1):
 
                         
             
+<<<<<<< HEAD
     print("termina ")        
     return (exact,res,listp)
 
@@ -614,6 +664,10 @@ def marginalizas(lista, var, partirin, M=25):
             
     # print("termina ")        
     return (exact,res,listp,units)
+=======
+    # print("termina ")        
+    return (exact,res,listp)
+>>>>>>> 9f739819c55ac3903f186ab9db280b8959a2b66c
 
 def topologico(lista):
     orden = []
