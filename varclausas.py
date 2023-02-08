@@ -257,7 +257,7 @@ class varclau:
     
 reader=open("list0","r")
 # reader=open("archivolee","r")
-writer=open("output0","w")
+writer=open("output1","w")
 writer.write("Problem;Time\n")
 ttotal = 0
 # i=0
