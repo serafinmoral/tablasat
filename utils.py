@@ -526,7 +526,7 @@ def marginaliza(lista, var, partirin, M=30, Q=1):
 
                         
             
-        print("termina ")        
+    print("termina ")        
     return (exact,res,listp)
 
 
