@@ -9,7 +9,9 @@ from SimpleClausulas import *
 from time import *
 from utils import *
 from DeterministicDeletion import *
-from arboltablaglobal import *
+# from arboltablaglobal import *
+from arbolbooleano import *
+
 
     
 def triangulap(pot):
@@ -162,9 +164,13 @@ def main(prob, Previo=True, Mejora=False): #EDM
 
         back = prob.rela.copia()
 
+        back.borraf(15)
+        p = p = back.tabla[60][15]
         
+        a = creadesdetabla(p,Q=3)
 
-        for i in [3,4,5,5,5,6,6,7,7,7]:
+
+        for i in [3,4,4,5,5,5,6,6,6,7]:
             back.minid(i)
         arbol = calculaglobal(prob.rela,[])
 
