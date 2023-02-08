@@ -12,7 +12,6 @@ Calculates the size of the union of the variables of all the tables in a list
 
 from tablaClausulas import *
 from vartablas import *
-import  ProblemaTrianFactor as pt
 
 def tam(l):
     tot = set()
