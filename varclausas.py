@@ -223,8 +223,8 @@ class varclau:
         def borra(self, L=600):
             trabajo = self.copia()
             
-            t1 = time()
-            while trabajo.getvars() and not trabajo.contradict and time()-t1<=L:
+            
+            while trabajo.getvars() and not trabajo.contradict:
                 v = trabajo.siguiente()
                 print(v,len(trabajo.getvars()))
                 if v in trabajo.unit:
@@ -247,8 +247,7 @@ class varclau:
              
 
                 for cl1 in lista1:
-                    if time()-t1>L:
-                        break
+                    
                     for cl2 in lista2:
                         cl = cl1.union(cl2)-{v,-v}
                         cln = set(map(lambda x:-x,cl))
@@ -266,7 +265,6 @@ writer=open("output1","w")
 writer.write("Problem;Time\n")
 ttotal = 0
 signal.signal(signal.SIGALRM, signal_handler)
-signal.alarm(600)
 
 # i=0
 for linea in reader:
@@ -280,10 +278,13 @@ for linea in reader:
         nombre=linea.strip()
         print(nombre)     
         (info, nvar, nclaus) = leeArchivoGlobal(nombre)
+        signal.alarm(5)
+
         t1 = time()
 
         dp = varclau()
         dp.fromSimple(info)
+
         try:
             dp.borra()
         except Exception:
