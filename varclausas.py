@@ -278,7 +278,7 @@ for linea in reader:
         nombre=linea.strip()
         print(nombre)     
         (info, nvar, nclaus) = leeArchivoGlobal(nombre)
-        signal.alarm(600)
+        signal.alarm(7200)
 
         t1 = time()
 
