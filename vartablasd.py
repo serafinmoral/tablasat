@@ -2214,7 +2214,7 @@ class varpot:
                 else:
                     
                     h = nodoTabla([])
-                    ordena(list1,Q)
+                    combinaincluidas(list1,K=1)
                     if list1:
                         for q in list1:
                         
@@ -2261,7 +2261,7 @@ class varpot:
             
             while vorig and not self.contradict: 
                 var = trabajo.siguientep(vorig)
-                print("var ", len(vorig),  trabajo.tad(var))
+                print("var ", var, len(vorig),  trabajo.tad(var))
 
                 list1 = trabajo.get(var)
                 list2 = trabajo.getd(var)
@@ -2278,6 +2278,8 @@ class varpot:
                     trabajo.eliminar(p)
 
                 n = len(list1) + len(list2)
+
+                combinaincluidas(list1, K=0)
                 
                 
                        

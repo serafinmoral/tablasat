@@ -164,17 +164,13 @@ def main(prob, Previo=True, Mejora=False): #EDM
 
         back = prob.rela.copia()
 
-        back.borraf(15)
-        p = p = back.tabla[60][15]
+       
         
-        a = creadesdetabla(p,Q=3)
 
 
-        for i in [3,4,4,5,5,5,6,6,6,7]:
-            back.minid(i)
-        arbol = calculaglobal(prob.rela,[])
-
-        for i in [3,3,4,4,4,5,5,5,6,6,6,7,7,7,8,8,8,9,9,10,10,11,11,11,12,12,12,13,13,14,14,15,15]:
+     
+        for i in [3,3,4,4,4,5,5,5,6,6,6,7,7,7,8,8,8,9,9,10,10]:
+            print("i = ",i)
             back.minid(i)
 
         back.borraf(30)
