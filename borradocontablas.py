@@ -10,7 +10,6 @@ from time import *
 from utils import *
 from DeterministicDeletion import *
 # from arboltablaglobal import *
-from arbolbooleano import *
 
 
     
@@ -173,7 +172,7 @@ def main(prob, Previo=True, Mejora=False): #EDM
             print("i = ",i)
             back.minid(i)
 
-        back.borraf(30)
+        back.borra(10)
 
       
 

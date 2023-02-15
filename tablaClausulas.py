@@ -38,6 +38,9 @@ class nodoTabla:
         result.tabla = self.tabla.copy()
         return result
     
+    def getvars(self):
+        return self.listavar
+    
     def extrae2(self,vars):
         res = []
         if len(vars)>=2:
@@ -145,7 +148,7 @@ class nodoTabla:
 
         if not des:
             op = op.copia()
-        extra = set(op.listavar) - set(result.listavar)
+        extra = set(op.getvars()) - set(result.getvars())
         if extra:
                 slice_ = [slice(None)] * len(result.listavar)
                 slice_.extend([np.newaxis] * len(extra))
@@ -154,7 +157,7 @@ class nodoTabla:
 
                 result.listavar.extend(extra)
 
-        extra = set(result.listavar) - set(op.listavar)
+        extra = set(result.getvars()) - set(op.getvars())
         if extra:
                 slice_ = [slice(None)] * len(op.listavar)
                 slice_.extend([np.newaxis] * len(extra))

@@ -1,667 +1,207 @@
-"""
-Spyder Editor
-
-This is a temporary script file.
-"""
-import networkx as nx    
-
 import os
 import math
 from pickle import FALSE
 from tablaClausulas  import *
 from time import * 
-from vartablasd import *
-
-
-def triangulacond(pot):
-    orden = []
-    clusters = []
-    
-    borr = []
-   
-
-    grafo = pot.cgrafo()
-
-    ma = 0
-    mv = 0
-    n = len(grafo.nodes)
-    
-
-    i= 0
-    total = set()
-    cnodo = max(grafo.nodes,key = lambda x : grafo.degree[x])
-
-    while grafo.nodes:
-
-        nnodo = min(grafo.nodes,key = lambda x : grafo.degree[x])
-        # print(nnodo)
-        orden.append(nnodo)
-        veci = set(grafo[nnodo])
-        clus = veci.union({nnodo})
-        clusters.append(clus)
-
-
-        # print( i, clus) 
-        i += 1
-        grafo.remove_node(nnodo)
-        for x in veci:
-            for y in veci:
-                if not x==y:
-                    grafo.add_edge(x,y)
-
-    
-    clusters.append(set())
-
-    h = list(map(len,clusters))
-    mh = max(h)
-    sh = sum(h)
-    print("maximo: ", mh, "suma: ", sh)
-    
-    
-
-
-
-    
-    
-    
-    return (orden,cnodo,mh)
-    
-
-
-
-def calculaglobal(rela, conf = [], L=15, M=25):
-        if rela.trivial():
-            return arbol()
-        if rela.contradict:
-            t = arbol()
-            t.anula()
-            return t
-        print(conf) 
-
-        result = arbol()
-        vars = rela.getvars()
-        print(len(vars))
-
-        rela.minid(5)
-        
-
-
-        
-
-        if len(vars)<= 80:
-            val = rela.borraf(11)
-        else:
-            val = rela.borraf(11)
-
-        vars = rela.getvars()
-        print(len(vars))
-
-        if not vars:
-            return result
-        cnodo = rela.getmax()
-        p0 = rela.reduce(-cnodo)
-        p1 = rela.reduce(cnodo)
-
-
-    
-        
-    
-        
-
-        if p0.contradict and p1.contradict:
-                result.anula()
-                return result
-
-     
-
-        # (x0,x1) = pot.logcuenta(cnodo)
-
-        # if x0>x1:
-
-        conf.append(-cnodo)
-        h0 = calculaglobal(p0,conf,L,M)
-        conf.pop()
-
-
-        conf.append(cnodo)
-
-        h1 = calculaglobal(p1,conf,L,M)
-        conf.pop()
-        # else:
-        #     conf.append(cnodo)
-
-        #     h1 = calculaglobal(p1,conf,L)
-        #     conf.pop()
-
-            # conf.append(-cnodo)
-            # h0 = calculaglobal(p0,conf,L)
-            # conf.pop()
-            
-            
-
-
-        # if h0.value.contradict and h1.value.contradict:
-        #         result.anula()
-
-        #         return result
-
-        # if h0.trivial() and h1.trivial():
-        #         return result
-
-        
-            
-        result.asignavarhijos(cnodo,h0,h1)
-
-            
-
-        return result
-
-
-def backtr(rela):
-        if rela.trivial():
-            return arbol()
-        if rela.contradict:
-            t = arbol()
-            t.anula()
-            return t
-        print(conf) 
-
-
-        result = arbol()
-        vars = rela.getvars()
-        print(len(vars))
-        
-        if len(vars)<= 80:
-            val = rela.borraf(7)
-        else:
-            val = rela.borraf(7)
-
-        vars = rela.getvars()
-        print(len(vars))
-
-        if not vars:
-            return result
-        cnodo = rela.getmax()
-
-        p0 = rela.reduce(-cnodo)
-        p1 = rela.reduce(cnodo)
-
-    
-        
-    
-        
-
-        if p0.contradict and p1.contradict:
-                result.anula()
-                return result
-
-     
-
-        # (x0,x1) = pot.logcuenta(cnodo)
-
-        # if x0>x1:
-
-        conf.append(-cnodo)
-        h0 = calculaglobal(p0,conf,L,M)
-        conf.pop()
-
-
-        conf.append(cnodo)
-
-        h1 = calculaglobal(p1,conf,L,M)
-        conf.pop()
-        # else:
-        #     conf.append(cnodo)
-
-        #     h1 = calculaglobal(p1,conf,L)
-        #     conf.pop()
-
-            # conf.append(-cnodo)
-            # h0 = calculaglobal(p0,conf,L)
-            # conf.pop()
-            
-            
-
-
-        # if h0.value.contradict and h1.value.contradict:
-        #         result.anula()
-
-        #         return result
-
-        # if h0.trivial() and h1.trivial():
-        #         return result
-
-        
-            
-        result.asignavarhijos(cnodo,h0,h1)
-
-            
-
-        return result
-
-
-
-def calculaglobal2(rela, conf = []):
-        if rela.trivial():
-            return (True, conf)
-        if rela.contradict:
-            return (False, conf)
-
-
-        units = []
-        potentials = []
-        resolv = False
-        level = 0
-
-                
-
-
-
-        result = arbol()
-        result.value =  varpot()
-       
-        vars = set(rela.tabla.keys())
-        print(len(vars))
-        
-        
-
-
-        p0 = rela.reduce(cnodo, inplace = False)
-        p1 = rela.reduce(-cnodo, inplace = False)
-
-    
-        
-    
-        
-        p0.borrafacil(p0.getvars(),M)
-    
-
-        p1.borrafacil(p1.getvars(),M)
-
-        if p0.contradict and p1.contradict:
-                result.anula()
-                return result
-
-        if p0.trivial() and p1.trivial():
-                return result
-
-        # (x0,x1) = pot.logcuenta(cnodo)
-
-        # if x0>x1:
-
-        conf.append(-cnodo)
-        h0 = calculaglobal(p0,conf,L,M)
-        conf.pop()
-
-
-        conf.append(cnodo)
-
-        h1 = calculaglobal(p1,conf,L,M)
-        conf.pop()
-        # else:
-        #     conf.append(cnodo)
-
-        #     h1 = calculaglobal(p1,conf,L)
-        #     conf.pop()
-
-            # conf.append(-cnodo)
-            # h0 = calculaglobal(p0,conf,L)
-            # conf.pop()
-            
-            
-
-
-        # if h0.value.contradict and h1.value.contradict:
-        #         result.anula()
-
-        #         return result
-
-        # if h0.trivial() and h1.trivial():
-        #         return result
-
-        
-            
-        result.asignavarhijos(cnodo,h0,h1)
-
-            
-
-        return result
-
-
+from utils import potdev
+
+def creadesdetabla(t, Q=10):
+        # r = t.minimiza(con = nodoTabla([]))
+            res = arbol()
+            if t.trivial():
+                res.value =  nodoTabla([])
+                res.var = 0
+            elif t.contradict():
+                res.value =  nodoTabla([])
+                res.var = 0
+                res.value.tabla = False
+            elif len(t.listavar)<=Q:
+                res.value= t
+                res.var = 0
+            else:
+
+                v = t.minentropia()
+                res.var = v
+                t0 = t.reduce([-v], inplace = False)
+                t1 = t.reduce([v], inplace = False)
+               
+                l0 = creadesdetabla(t0, Q)
+                l1 = creadesdetabla(t1, Q)
+                res.hijos[0] = l0
+                res.hijos[1] = l1 
+            return res
 
 class arbol:
     def __init__(self):
         self.var = 0
-        self.value = varpot()
+        self.value = nodoTabla([])
         self.hijos = [None,None]
 
-    def anula(self):
-        self.var = 0
-        self.value.anula()
-        self.hijos = [None,None]
+    def poda(self,Q=20):
+        if self.var == 0:
+            if len(self.value.listavar)<= Q:
+                return
+            else:
+                h = creadesdetabla(self.value)
+                self.value = h.value
+                self.var = h.var
+                self.hijos = h.hijos
+                return
+        self.hijos[0].poda(Q)
+        self.hijos[1].poda(Q)
+
+        if self.hijos[0].var ==0 and self.hijos[1].var ==0:
+            if self.hijos[0].value.contradict() and self.hijos[1].value.contradict():
+                self.var = 0
+                self.hijos = [None,None]
+                self.value.anula()
+                return
+
+            if self.hijos[0].value.trivial() and self.hijos[1].value.trivial():
+                self.var = 0
+                self.hijos = [None,None]
+                self.value= nodoTabla([])
+                return
+
+            if len(set(self.hikos[0].value.listavar).union(set(self.hikos[1].value.listavar)))<=Q-1:
+                v = self.var
+                self.var = 0
+                self.hijos = [None,None]
+                r0 = self.hijos[0].value.suma(potdev(v))
+                r1 = self.hijos[1].value.suma(potdev(-v))
+                self.value = r0.combina(r2)
+                return
+        
+
+    def reduce(self,lv):
+        if self.var == 0:
+            t = self.value.reduce(lv)
+            res = arbol()
+            res.value = t
+            return res
+        
+        v = self.var
+        if v in lv:
+            return self.hijos[1].reduce(lv)
+        if -v in lv:
+            return self.hijos[0].reduce(lv)
+
+        res = arbol()
+        res.var=v
+        res.hijos[0] = self.hijos[0].reduce(lv)
+        res.hijos[1] = self.hijos[0].reduce(lv)
+
+    def combina(self,t, Q= 20,inplace = False):
+        res = self if inplace else arbol()
+        if isinstance(t,nodoTabla):
+            if self.var == 0:
+                    if len(set(t.listavar).union(set(self.value.listavar)))<=Q:
+                        res.value = self.value.combina(t,inplace)
+                        if res.value.contradict():
+                            res.value.anula()
+                        return res
+                    else:
+                        v = self.value.minentropia()
+                        res.var = v
+                        h0 = arbol()
+                        h1 = arbol()
+                        h0.value = self.value.reduce([-v])
+                        h1.value = self.value.reduce([v])
+                        res.hijos[0] = h0.combina(t.reduce([-v]))
+                        res.hijos[1] = h1.combina(t.reduce([v]))
+                        return res
 
 
 
-            
+            else:
+                res.var = self.var
+                res.hijos[0] = self.hijos[0].combina(t.reduce([-self.var]),inplace)
+                res.hijos[1] = self.hijos[1].combina(t.reduce([self.var]),inplace)
+                return res
+
+        if t.var ==0:
+            return self.combina(t.value,inplace)
+        if self.var == 0:
+            res.var = t.var
+            res.hijos[0] = self.combina(t.hijos[0],inplace)
+            res.hijos[1] = self.combina(t.hijos[1],inplace)
+            return res
+
+        res.var = self.var
+        res.hijos[0] = self.hijos[0].combina(t.reduce([-self.var]),inplace)
+        res.hijos[1] = self.hijos[1].combina(t.reduce([self.var]),inplace)
+        return res
+        
+
+    def suma(self,t, Q= 20,inplace = False):
+        res = self if inplace else arbol()
+        if isinstance(t,nodoTabla):
+            if self.var == 0:
+                    if len(set(t.listavar).union(set(self.value.listavar)))<=Q:
+                        res.value = self.value.suma(t,inplace)
+                        if res.value.trivial():
+                            res.value = nodoTabla([])
+                        return res
+                    else:
+                        v = self.value.minentropia()
+                        res.var = v
+                        h0 = arbol()
+                        h1 = arbol()
+                        h0.value = self.value.reduce([-v])
+                        h1.value = self.value.reduce([v])
+                        res.hijos[0] = h0.suma(t.reduce([-v]))
+                        res.hijos[1] = h1.suma(t.reduce([v]))
+                        return res
 
 
 
-    def void(self):
-        self.var = 0
-        self.value = varpot()
-        self.hijos = [None,None]
+            else:
+                res.var = self.var
+                res.hijos[0] = self.hijos[0].suma(t.reduce([-self.var]),inplace)
+                res.hijos[1] = self.hijos[1].suma(t.reduce([self.var]),inplace)
+                return res
 
-    def trivial(self):
-        if self.value.trivial() and self.var == 0:
-            return True
+        if t.var ==0:
+            return self.suma(t.value,inplace)
+        if self.var == 0:
+            res.var = t.var
+            res.hijos[0] = self.suma(t.hijos[0],inplace)
+            res.hijos[1] = self.suma(t.hijos[1],inplace)
+            return res
+
+        res.var = self.var
+        res.hijos[0] = self.hijos[0].suma(t.reduce([-self.var]),inplace)
+        res.hijos[1] = self.hijos[1].suma(t.reduce([self.var]),inplace)
+        return res
+        
+                    
+    def borra(self,lv,Q=20, inplace = False):
+        res = self if inplace else arbol()
+        if self.var ==0:
+            nlv = list(set(lv).intersection(set(self.value.listavar)))
+            res.value = self.value.borrra(nlv)
+            if res.value.trivial():
+                res.value = nodoTabla([])
+            return res
+        v = self.var
+        if v in lv:
+            res = self.hijos[0].suma(self.hijos[1],Q,inplace)
+            return res
         else:
-            return False
-
-
-    def asignavar(self,p):
-        self.var = p
-        self.value = None
-
-        self.hijos[0] = arbol()
-        self.hijos[1] = arbol()
-
-    def asignavarhijos(self,p,h0,h1):
-        self.var = p
-
-        self.hijos[0] = h0
-        self.hijos[1] = h1
+            res.var = v
+            res.hijos[0] = self.hijos[0].borra(lv,Q,inplace)
+            res.hijos[1] = self.hijos[1].borra(lv,Q,inplace)
 
 
 
-
-
-    def asignaval(self,x):
-        self.var = 0
-        self.value = x
-        self.hijos = [None,None]
-
-    def asignahijo(self,t,i):
-        self.hijos[i] = t
 
     def imprime(self, str = ''):
 
             print (str +"variable ",self.var)
             if self.var==0:
-                self.value.imprime()
+                print(str + "valor " , self.value)
             else:
                 print(str +"hijo 1")
                 self.hijos[0].imprime(str  + '   ')
                 print(str +"hijo 2")
-                self.hijos[1].imprime(str  + '   ')
-
-    def getvars(self):
-        vars = set(self.value.listavar)
-        vu = { (abs(x)) for x in self.unit}
-        vars.update(vu)
-        if not self.var == 0:
-            vars.update(self.hijos[0].getvars())
-            vars.update(self.hijos[1].getvars())
-        return vars
-
-
-
-    def lon(self):
-        return (len(self.value.unit) + len(self.value.listaclaus))
-
-    def nulo(self):
-        if self.var == 0 and not self.unit and self.value.trivial():
-            return True
-        else:
-            return False
-
-    def copia(self):
-        res = arbol()
-
-        if self.var == 0:
-            res.asignaval(self.value.copia())
-            res.unit = self.unit.copia()
-
-        else:
-            v = self.var
-            h0 = self.hijos[0].copia()
-            h1 = self.hijos[1].copia()
-            u = self.unit.copia()
-            res.asignavarhijosv(v,h0,h1,u)
-
-        return res
-
-
-
-
-    
-
-
-    def reduce(self,v, inplace = False):
-        res = self if inplace else self.copia()
-        if v in res.unit:
-            res.unit.discard(v)
-        if -v in res.unit:
-            res.anula
-            res.contradict = True
-            return res
-    
-        res.value.reduce([v], inplace=True)
-        if res.value.contradict:
-            res.anula()
-            return res 
-
-        if len(res.value.listvar)==1:
-            if res.value.trivial():
-                res.value = nodoTabla()
-
-            elif not res.value.tabla[0]:
-                nv = res.value.listavar[0]
-                res.insertau({nv})
-            elif not res.value.tabla[1]:
-                nv = -res.value.listavar[0]
-                res.insertau({-nv})
-            if inplace:
-                return res
-            else:
-                return
-
-        if not res.var == 0:
-            if res.var == v:
-                res.hijos[1].value.combina(res.value, inplace=True)
-                res.value = res.hijos[1].value
-                res.var = res.hijos[1].var
-                res.hijos = res.hijos[1].hijos
-
-            elif -res.var == v:
-                res.hijos[0].value.combina(res.value, inplace=True)
-                res.value = res.hijos[0].value
-                res.var = res.hijos[0].var
-                res.hijos = res.hijos[0].hijos
-            else:
-                res.hijos[0].reduce(v,inplace=True)
-                res.hijos[1].reduce(v, inplace=True)
-
-        if not inplace:
-            return res
-
-            
-
-
-    def reduces(self,s, inplace=False):
-        
-        v = set(s)
-
-        res = self if inplace else self.copia()
-        
-        res.unit.difference_update(v)
-        mv = set(map(lambda x:-x,v))
-        if mv.intersection(res.unit):
-            res.anula
-            res.contradict = True
-            return res
-        res.value.reduce(list(v), inplace=True)
-        if res.value.contradict:
-            res.asignaval(res.value,set())
-            return res
-        if not res.var == 0:
-            if res.var in v:
-                res.hijos[1].reduces(s,inplace=True)
-                res.hijos[1].value.combina(res.value)
-                res.value = res.hijos[1].value
-                res.var = res.hijos[1].var
-                res.hijos = res.hijos[1].hijos
-
-            elif -res.var in v:
-                res.hijos[0].reduces(s,inplace=True)
-                res.hijos[0].value.combina(res.value)
-                res.value = res.hijos[0].value
-                res.var = res.hijos[0].var
-                res.hijos = res.hijos[0].hijos
-            else:
-                res.hijos[0].reduces(v, inplace=True)
-                res.hijos[1].reduces(v, inplace=True)
-
-        if not inplace:
-            return res
-
-
-
-    
-
-
-                            
-
-        
-
-   
-
-    
-
-    
-
-    def normaliza(self,N, inplace = True):
-      
-        if self.var == 0:
-            return
-        else:
-            self.hijos[0].normaliza(N)
-            self.hijos[1].normaliza(N)
-            v = self.var
-            if self.hijos[0].contradict:
-                self.unit.add(v)
-                self.hijos[1].union_update(self.unit)
-                self.value = self.hijos[1].value
-                self.var = self.hijos[1].var
-                self.hijos = self.hijos[1].hijos
-
-            elif self.hijos[1].contradict:
-                self.unit.add(-v)
-                self.hijos[0].union_update(self.unit)
-                self.value = self.hijos[0].value
-                self.var = self.hijos[0].var
-                self.hijos = self.hijos[0].hijos
-            
-            else:
-                vars = self.hijos[0].unit.intersection(self.hijos[1].unit)
-                if vars:
-                    self.unit.update(vars)
-                    self.hijos[0].unit.difference_update(vars)
-                    self.hijos[1].unit.difference_update(vars)
-
-            if  self.hijos[0].var == 0 and self.hijos[1].var == 0:
-                vars = set(self.hijos[0].value.listavar).union(set(self.hijos[1].value.listavar))
-                varsunit0 = set(map(abs,self.hijos[0].value.unit))
-                varsunit1 = set(map(abs,self.hijos[1].value.unit))
-                vars.update(varsunit0.union(varsunit1))
-                if len(vars) < N:
-                    l0 = self.hijos[0].value
-                    l1 = self.hijos[1].value
-                    self.hijos[0].unit.add(-v)
-                    self.hijos[1].unit.add(v)
-                    l0.extendunits(self.hijos[0].unit)
-                    l1.extendunits(self.hijos[1].unit)
-                    l0.suma(l1, inplace=True)
-                    self.value = l0
-                    self.var = 0
-
-            
-
-
-            
-
-    def insertau(self,units,conf,N, posvar):
-        if self.unit.intersection(conf):
-                return
-        else:
-            neg = set(map(lambda x: -x, self.unit))
-            conf.difference_update(neg)
-            
-        if not conf:
-            self.reduces(units)
-            self.unit.update(units)
-        elif self.var==0:
-            
-            va = max (conf, key = lambda x: posvar[abs(x)])
-            v = abs(va)
-            tab0 = self.value.reduce(-v, inplace=False)
-            tab1 = self.value.reduce(v, inplace=False)
-            ar0 = createft(tab0)
-            ar1 = createft(tab1)
-
-            self.asignavarhijosv(v,ar0,ar1,self.unit)
-
-            if self.hijos[0].contradict:
-                self.unit.add(v)
-                self.hijos[1].union_update(self.unit)
-                self.value = self.hijos[1].value
-                self.var = self.hijos[1].var
-                self.hijos = self.hijos[1].hijos
-                conf.discard(va)
-                self.insertaunit(units,conf,N,posvar)
-                return
-
-
-
-            elif self.hijos[1].contradict:
-                self.unit.add(-v)
-                self.hijos[0].union_update(self.unit)
-                self.value = self.hijos[0].value
-                self.var = self.hijos[0].var
-                self.hijos = self.hijos[0].hijos
-                self.insertaunit(units,conf,N,posvar)
-                return
-
-            conf.discard(va)
-            if v == -va:
-                self.hijos[0].insertaunit(units,conf,N,posvar)
-            else:
-                self.hijos[1].insertaunit(units,conf,N,posvar)
-        else:
-            v = self.var
-            if -v in conf:
-                conf.discard(-v)
-                self.hijos[0].insertaunit(units,conf,N,posvar)
-            elif v in conf:
-                conf.discard(v)
-                self.hijos[1].insertaunit(units,conf,N,posvar)
-            elif -v in units:
-                r = min(conf,key= lambda x: posvar[abs(x)])
-                conf.discard(r)
-                self.hijos[0].insertaunit({r},conf,N,posvar)
-            elif v in units:
-                r = min(conf,key= lambda x: posvar[abs(x)])
-                conf.discard(r)
-                self.hijos[1].insertaunit({r},conf,N,posvar)
-            else:
-                self.hijos[1].insertaunit(units,conf.copy(),N,posvar)
-                self.hijos[0].insertaunit(units,conf,N,posvar)
-
-
-
-
-
-
-
-
-
-
+                self.hijos[1].imprime(str  + '   ')     

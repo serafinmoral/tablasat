@@ -168,9 +168,23 @@ def ordenaycombinaincluidas(lista,rela, borrar = True, inter=False):
     lista.reverse()
 
 
+def eliminaincluidas(l1,l2):
+
+    borr = []
+    for p in l1:
+        for q in l2:
+            if set(p.getvars())<= set(q.getvars()):
+                q.combina(p,inplace=True)
+                borr.append(p)
+                break
+        if p in borr:
+            continue
+    for p in borr:
+        l1.remove(p)
+
 def combinaincluidas(lista, K=0):
     
-    lista.sort(key = lambda x : - len(x.listavar) )
+    lista.sort(key = lambda x : - len(x.getvars()) )
 
     
     i=0
@@ -179,7 +193,7 @@ def combinaincluidas(lista, K=0):
         j = i+1
         while j < len(lista):
             # print("lista, i, j", len(lista), i, j)
-            if len(set(lista[j].listavar) - set(lista[i].listavar))<=K:
+            if len(set(lista[j].getvars()) - set(lista[i].getvars()))<=K:
                 p = lista[i]
                 q = lista[j]
                 t = p.combina(q)
@@ -195,7 +209,7 @@ def combinaincluidas(lista, K=0):
 
 def agrupatam(lista):
     
-    lista.sort(key = lambda x : - len(x.listavar) )
+    lista.sort(key = lambda x : - len(x.getvars()) )
 
     
 

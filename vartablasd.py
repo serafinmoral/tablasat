@@ -9,6 +9,7 @@ from statistics import variance
 from utils import *
 from time import *
 from random import shuffle
+from arboltabla import *
 
 
 def ordena(l,Q):
@@ -17,16 +18,16 @@ def ordena(l,Q):
     l.clear()
 
     while lc:
-        q = min(lc, key = lambda x: len(x.listavar))
+        q = min(lc, key = lambda x: len(x.getvars()))
         lc.remove(q)
         l.append(q)
-        lista = set(q.listavar)
+        lista = set(q.getvars())
         while lc:
-            q = min(lc, key = lambda x: len(lista.union(set(x.listavar))))
-            if len(lista.union(set(q.listavar)))<=Q:
+            q = min(lc, key = lambda x: len(lista.union(set(x.getvars()))))
+            if len(lista.union(set(q.getvars())))<=Q:
                 lc.remove(q)
                 l.append(q)
-                lista.update(set(q.listavar))
+                lista.update(set(q.getvars()))
             else:
                 break
 
@@ -66,7 +67,7 @@ class varpot:
             res  = set()
             l = self.get(v) + self.getd(v)
             for p in l:
-                res.update(set(p.listavar))
+                res.update(set(p.getvars()))
          
 
 
@@ -99,7 +100,7 @@ class varpot:
                 res.tablad[v] = lista2
                 for p in lista1+lista2:
                     trabajo.eliminar(p)
-                    for w in p.listavar:
+                    for w in p.getvars():
                         if w in res.tablat:
                             res.tablat[w].append(p)
                         else:
@@ -150,9 +151,9 @@ class varpot:
                     level+=-1
                     continue
 
-                n1 = min(list1, key = lambda x: len(x.listavar))
+                n1 = min(list1, key = lambda x: len(x.getvars()))
 
-                n2 = min(list2, key = lambda x: len(set(x.listavar).union(set(n1.listavar))))
+                n2 = min(list2, key = lambda x: len(set(x.getvars()).union(set(n1.getvars()))))
 
                 nueva = n1.combina(n2, inplace = False)
                 nueva.borra([var], inplace=True)
@@ -191,7 +192,7 @@ class varpot:
                 lista = []
                 for p in listap:
                     
-                    if len(set(p.listavar)-vars )<=1:
+                    if len(set(p.getvars())-vars )<=1:
                         lista.append(p)
                 print(len(lista))
                 # sleep(1)
@@ -208,7 +209,7 @@ class varpot:
                         pos = pos + orden[-(level-oldl)-1:]
                         del orden[-(level-oldl)-1:]
                         del config[-(level-oldl):]
-                        print("aprendo ", nueva.listavar)
+                        print("aprendo ", nueva.getvars())
                         margi = True
                         break   
                         
@@ -262,18 +263,18 @@ class varpot:
                     continue
 
                 if list1 and list2:
-                    n1 = min(list1, key = lambda x: len(x.listavar))
+                    n1 = min(list1, key = lambda x: len(x.getvars()))
 
-                    n2 = min(list2, key = lambda x: len(set(x.listavar).union(set(n1.listavar))))
+                    n2 = min(list2, key = lambda x: len(set(x.getvars()).union(set(n1.getvars()))))
 
-                    if (len(set(n1.listavar).union(set(n2.listavar))))<= M:
+                    if (len(set(n1.getvars()).union(set(n2.getvars()))))<= M:
                         nueva = n1.combina(n2, inplace = False)
                         nueva.borra([var], inplace=True)
-                        print("aprendo ", nueva.listavar, 2**(len(nueva.listavar)), np.sum(nueva.tabla))
+                        print("aprendo ", nueva.getvars(), 2**(len(nueva.getvars())), np.sum(nueva.tabla))
                         
                         if n1 in self.getd(var):
                             if n2 in self.getd(var):
-                                if len(n2.listavar) < len(n1.listavar): 
+                                if len(n2.getvars()) < len(n1.getvars()): 
                                     self.eliminar(n1)
                                 else:
                                     self.eliminar(n2)
@@ -287,7 +288,7 @@ class varpot:
                         pos = pos + orden[-(level-oldl)-1:]
                         del orden[-(level-oldl)-1:]
                     else:
-                        cl = set(filter(lambda x: abs(x) in n1.listavar or abs(x) in n2.listavar,config))
+                        cl = set(filter(lambda x: abs(x) in n1.getvars() or abs(x) in n2.getvars(),config))
                         todas = self.insertarclau(cl) 
                         print(cl)
                         print(todas)
@@ -299,12 +300,12 @@ class varpot:
                     continue
 
                 if list1 and l2:
-                    n1 = min(list1, key = lambda x: len(x.listavar))
+                    n1 = min(list1, key = lambda x: len(x.getvars()))
                     cl2 = l2[0]
                     if n1 in self.getd(var):
 
                         self.eliminarc(cl2)
-                    cl = set(filter(lambda x: abs(x) in n1.listavar or x in cl2,config))
+                    cl = set(filter(lambda x: abs(x) in n1.getvars() or x in cl2,config))
                     todas = self.insertarclau(cl) 
                     level = max([self.level(x) for x in todas])
                     del config[-(level-oldl):]
@@ -314,12 +315,12 @@ class varpot:
 
                 if list2 and l1:
                     cl1 = l1[0]
-                    n2 = min(list2, key = lambda x: len(x.listavar))
+                    n2 = min(list2, key = lambda x: len(x.getvars()))
                     if n2 in self.getd(var):
                             self.eliminarc(cl1)
 
 
-                    cl = set(filter(lambda x: abs(x) in n2.listavar or x in cl1,config))
+                    cl = set(filter(lambda x: abs(x) in n2.getvars() or x in cl1,config))
                     todas = self.insertarclau(cl) 
                     level = max([self.level(x) for x in todas])
                     del config[-(level-oldl):]
@@ -370,7 +371,7 @@ class varpot:
                 for p in lista:
                     h = p.reduce(config,inplace = False)
                     if not h.trivial():
-                        print ("error " ,p.listavar)
+                        print ("error " ,p.getvars())
             
 
         def trivial(self):
@@ -412,32 +413,32 @@ class varpot:
 
             res = p.copia()
 
-            svar = set(p.listavar)
+            svar = set(p.getvars())
             
-            # for v in p.listavar:
+            # for v in p.getvars():
             #     if v in self.tablad:
             #         for q in self.tablad[v]:
-            #             if set(q.listavar)<= svar:
+            #             if set(q.getvars())<= svar:
             #                 h = q.combina(p,inplace=False)
             #                 h.borra([v], inplace=True)
             #                 return self.simplifica(h)
                             
 
             lista = []
-            for v in p.listavar:
+            for v in p.getvars():
                 if v in self.tabla:
                     for q in self.tabla[v]:
                         if q not in lista:
                             lista.append(q)
 
-            for v in p.listavar:
+            for v in p.getvars():
                 if v in self.tablad:
                     for q in self.tablad[v]:
                         if q not in lista:
                             lista.append(q)
                
             for q in lista:
-                if set(q.listavar)<= svar:
+                if set(q.getvars())<= svar:
                     res.combina(q, inplace = True)
                     
             return res
@@ -453,16 +454,16 @@ class varpot:
 
             res = p.copia()
 
-            svar = set(p.listavar)
+            svar = set(p.getvars())
             
-            # ol = sorted(p.listavar,key = lambda x : self.posvar[x])
+            # ol = sorted(p.getvars(),key = lambda x : self.posvar[x])
 
-            ol = p.listavar
+            ol = p.getvars()
     
             for v in ol:
                 if v in self.tablad:
-                    for q in sorted(self.tablad[v], key = lambda x: len(x.listavar)):
-                        if set(q.listavar)<= svar:
+                    for q in sorted(self.tablad[v], key = lambda x: len(x.getvars())):
+                        if set(q.getvars())<= svar:
                             h = q.combina(p,inplace=False)
                             h.borra([v], inplace=True)
                             (h1,l1) = self.simplificat(h)
@@ -472,7 +473,7 @@ class varpot:
             res = p.copia()
 
             lista = []
-            for v in p.listavar:
+            for v in p.getvars():
                 if v in self.tabla:
                     for q in self.tabla[v]:
                         if q not in lista:
@@ -481,7 +482,7 @@ class varpot:
            
                
             for q in lista:
-                if set(q.listavar)<= svar:
+                if set(q.getvars())<= svar:
                     res.combina(q, inplace = True)
                     
             return (res, [])
@@ -497,20 +498,20 @@ class varpot:
 
             i = self.level(p)
             var = self.orden[i]
-            svar = set(p.listavar)
+            svar = set(p.getvars())
 
-            for v in p.listavar:
+            for v in p.getvars():
                 if v in self.tablad and not v==var:
                     for q in self.tablad[v]:
-                        if set(q.listavar)<= svar:
+                        if set(q.getvars())<= svar:
                             h = q.combina(p,inplace=False)
                             h.borra([v], inplace=True)
                             self.insertarb(h)
 
             if p.checkdetermi(var):
                     t = p.minimizadep(var, seg = set())
-                    # print("nuevo determinismo ", len(p.listavar), len(t.listavar))
-                    if len(t.listavar)< len(p.listavar):
+                    # print("nuevo determinismo ", len(p.getvars()), len(t.getvars()))
+                    if len(t.getvars())< len(p.getvars()):
                         self.insertarb(t)
                         q = p.borra([var],inplace = False)
                         self.insertarb(q)
@@ -520,7 +521,7 @@ class varpot:
                         else:
                             self.tablad[var] = [p]
 
-                        for v in p.listavar:
+                        for v in p.getvars():
                             if v in self.tablat:
                                 self.tablat[v].append(p)
                             else:
@@ -530,7 +531,7 @@ class varpot:
                     listn = self.get(var) + self.getd(var)
                     for q in lista:
                         if not q in listn:
-                            if svar <= set(q.listavar):
+                            if svar <= set(q.getvars()):
                                 self.eliminarb(q)
                                 h = q.combina(p, inplace = False)
                                 h.borrar([var], inplace=True)
@@ -541,7 +542,7 @@ class varpot:
                 else:
                     self.tabla[var] = [p]
 
-                for v in p.listavar:
+                for v in p.getvars():
                     if v in self.tablat:
                         self.tablat[v].append(p)
                     else:
@@ -558,66 +559,74 @@ class varpot:
 
             if p.trivial():
                 return []
+            
+            lp = p.getvars()
+            n = len(lp)
 
-            n = len(p.listavar)
+            svar = set(lp)
 
-            svar = set(p.listavar)
-
-            for v in p.listavar:
+            for v in lp:
                 if v in self.tablad:
                     for q in self.tablad[v]:
-                        if len(q.listavar) <= n and set(q.listavar)<= svar:
+                        lq = q.getvars()
+                        if len(lq) <= n and set(lq)<= svar:
                             h = q.combina(p,inplace=False)
                             h.borra([v], inplace=True)
                             return self.insertarb2(h)
             lista = []
             lista2 = []
-            for v in p.listavar:
+            for v in lp:
                 if v in self.tabla: 
                     for q in self.tabla[v]:
-                        if len(q.listavar)==n and q not in lista:
+                        lq = q.getvars()
+                        if len(lq)==n and q not in lista:
                             lista.append(q)
-                        elif len(q.listavar)<n and q not in lista2:
+                        elif len(lq)<n and q not in lista2:
                             lista2.append(q)
 
 
             for q in lista:
-                if  set(q.listavar)==svar:
+                sq = set(q.getvars())
+                if  sq==svar:
                     p.combina(q, inplace=True)
                     self.eliminar(q)
 
-            if len(p.listavar)<=Q:
+            if len(lp)<=Q:
                 for q in lista2:
-                    if set(q.listavar)<= svar:
+                    sq = set(q.getvars())
+                    if sq<= svar:
                         p.combina(q,inplace=True)
 
 
-                for v in p.listavar:
+                for v in lp:
                     if p.checkdetermi(v):
                         var = v
                         t = p.minimizadep(v, seg = set())
-                        # print("nuevo determinismo ", len(p.listavar), len(t.listavar))
-                        if len(t.listavar)< len(p.listavar):
+                        # print("nuevo determinismo ", len(p.getvars()), len(t.getvars()))
+                        if len(t.getvars())< len(lp):
                             l1 = self.insertarb2(t)
                             q = p.borra([var],inplace = False)
                             l2 = self.insertarb2(q)
                             return l1 + l2
                         else:
                             
-                            res = [p.listavar]
+                            res = [lp]
                             lista = []
-                            for v in p.listavar:
+                            for v in lp:
                                 if v in self.tablad:
                                     for q in self.tablad[v]:
-                                        if len(q.listavar) >n and q not in lista:
+                                        lq = q.getvars()
+                                        if len(lq) >n and q not in lista:
                                             lista.append(q)
                                 if v in self.tabla: 
                                     for q in self.tabla[v]:
-                                        if len(q.listavar) >n and q not in lista:
+
+                                        if len(q.getvars()) >n and q not in lista:
                                             lista.append(q)
                             ins = []
                             for q in lista:
-                                    if svar <= set(q.listavar):
+                                    sq = set(q.getvars())
+                                    if svar <= sq:
                                         
                                         self.eliminar(q)
                                         h = q.combina(p, inplace = False)
@@ -633,7 +642,7 @@ class varpot:
                             else:
                                     self.tablad[var] = [p]
 
-                            for v in p.listavar:
+                            for v in lp:
                                     if not v == var:
                                         if v in self.tabla:
                                             self.tabla[v].append(p)
@@ -644,8 +653,8 @@ class varpot:
 
 
 
-            res= [p.listavar]
-            for v in p.listavar:
+            res= [p.getvars()]
+            for v in lp:
                 if v in self.tabla:
                     self.tabla[v].append(p)
                 else:
@@ -675,7 +684,7 @@ class varpot:
             for v in svar:
                 if v in self.tablad:
                     for q in self.tablad[v]:
-                        if set(q.listavar)<= svar:
+                        if set(q.getvars())<= svar:
                             if q.getvalue(lcl):
                                 ncl = cl-{v,-v}
                                 return self.insertarclau(ncl)
@@ -714,7 +723,7 @@ class varpot:
                                     lista.append(q)
                 
             for q in lista:
-                if svar <= set(q.listavar):
+                if svar <= set(q.getvars()):
                     q.introduceclaun(cl)    
     
             ins = []  
@@ -773,11 +782,11 @@ class varpot:
             if p in self.getd(var):
                 self.tablad[var].remove(p)
 
-            for v in p.listavar:
+            for v in p.getvars():
                 self.tablat[v].remove(p)
 
         def insertar(self,p, small = [], vc = -1):
-            # print("inserto ", p.listavar)
+            # print("inserto ", p.getvars())
 
      
 
@@ -796,15 +805,15 @@ class varpot:
             if p.trivial():
                 return []
 
-            svar = set(p.listavar)
+            svar = set(p.getvars())
             
             
             
-            for v in p.listavar:
+            for v in p.getvars():
                 if v in self.tablad:
                     for q in self.tablad[v]:
-                        if set(q.listavar)<= svar:
-                            if len(q.listavar) == len(svar):
+                        if set(q.getvars())<= svar:
+                            if len(q.getvars()) == len(svar):
                                 if p.implicadopor(q):
                                     return []
                             h = q.combina(p,inplace=False)
@@ -813,7 +822,7 @@ class varpot:
                             
 
             lista = []
-            for v in p.listavar:
+            for v in p.getvars():
                 if v in self.tabla:
                     for q in self.tabla[v]:
                         if q not in lista:
@@ -822,8 +831,8 @@ class varpot:
             
                
             for q in lista:
-                if set(q.listavar)<= svar:
-                    if len(q.listavar) == len(svar):
+                if set(q.getvars())<= svar:
+                    if len(q.getvars()) == len(svar):
                         if p.implicadopor(q):
                             return []
                     p.combina(q, inplace = True)
@@ -832,11 +841,11 @@ class varpot:
 
             
             dets = []
-            for v in p.listavar:
+            for v in p.getvars():
                 if p.checkdetermi(v):
                     t = p.minimizadep(v, seg = set())
-                    # print("nuevo determinismo ", len(p.listavar), len(t.listavar))
-                    if len(t.listavar)< len(p.listavar):
+                    # print("nuevo determinismo ", len(p.getvars()), len(t.getvars()))
+                    if len(t.getvars())< len(p.getvars()):
                         t = small.simplifica(t)
                         l1 = self.insertar(t,small)
                         q = p.borra([v],inplace = False)
@@ -856,7 +865,7 @@ class varpot:
             lista = []
 
 
-            for v in p.listavar:
+            for v in p.getvars():
                 if v in self.tablad:
                     for q in self.tablad[v]:
                         if q not in lista:
@@ -869,12 +878,12 @@ class varpot:
             ins = []
             nd = []
             for q in lista:
-                if svar <= set(q.listavar):
+                if svar <= set(q.getvars()):
                     r = q.combina(p,inplace = False)
                     if dets:
-                        # print("obrrao ",vard, q.listavar)
+                        # print("obrrao ",vard, q.getvars())
                         r.borra([dets[0]],inplace = True)
-                        # print("añado ", vard, r.listavar)
+                        # print("añado ", vard, r.getvars())
                         self.eliminar(q)
                         ins.append(r)
 
@@ -886,7 +895,7 @@ class varpot:
                         if not r.implicadopor(q):
                             self.eliminar(q)
                             ins.append(r)
-                        elif len(q.listavar)==len(p.listavar):
+                        elif len(q.getvars())==len(p.getvars()):
                             return []
             for q in ins:
                 nd = nd + self.insertar(q, small)
@@ -897,7 +906,7 @@ class varpot:
                 nd.append(p)
 
 
-                for v in p.listavar:
+                for v in p.getvars():
                     if not v in dets:
                         if v in self.tabla:
                             self.tabla[v].append(p)
@@ -909,8 +918,8 @@ class varpot:
                         else:
                             self.tablad[v] = [p]
             elif not incl:
-                # if len(p.listavar)<=4:
-                #     print("Nueva pequeña ", len(p.listavar))
+                # if len(p.getvars())<=4:
+                #     print("Nueva pequeña ", len(p.getvars()))
                 #     nd.append(p)
                 for v in svar:
                     if v in self.tabla:
@@ -924,7 +933,7 @@ class varpot:
 
 
         def insertard(self,p):
-            # print("inserto ", p.listavar)
+            # print("inserto ", p.getvars())
            
             if p.contradict():
                 self.anula()
@@ -934,24 +943,24 @@ class varpot:
             if p.trivial():
                 return []
 
-            svar = set(p.listavar)
+            svar = set(p.getvars())
             
             
             
-            for v in p.listavar:
+            for v in p.getvars():
                 if v in self.tablad:
                     for q in self.tablad[v]:
-                        if set(q.listavar)<= svar:
+                        if set(q.getvars())<= svar:
                             h = q.combina(p,inplace=False)
                             h.borra([v], inplace=True)
                             return self.insertard(h)
                                  
             det = False
-            for v in p.listavar:
+            for v in p.getvars():
                 if p.checkdetermi(v):
                     t = p.minimizadep(v, seg = set())
-                    # print("nuevo determinismo ", len(p.listavar), len(t.listavar))
-                    if len(t.listavar)< len(p.listavar):
+                    # print("nuevo determinismo ", len(p.getvars()), len(t.getvars()))
+                    if len(t.getvars())< len(p.getvars()):
                         l1 = self.insertard(t)
                         q = p.borra([v],inplace = False)
                         l2 = self.insertard(q)
@@ -967,7 +976,7 @@ class varpot:
                 lista = []
 
                 tec = []
-                for v in p.listavar:
+                for v in p.getvars():
                     if v in self.tablad:
                         for q in self.tablad[v]:
                             if q not in lista:
@@ -978,7 +987,7 @@ class varpot:
                                 lista.append(q)
                 ins = []
                 for q in lista:
-                    if svar <= set(q.listavar):
+                    if svar <= set(q.getvars()):
                         self.eliminar(q)
                         h = p.combina(q, inplace = False)
                         h.borra([var], inplace = True)
@@ -1026,7 +1035,7 @@ class varpot:
 
 
         def eliminar(self,p):
-            for v in p.listavar:
+            for v in p.getvars():
                 if v in self.tabla and p in self.tabla[v]:
                     self.tabla[v].remove(p)
                 else:
@@ -1076,8 +1085,8 @@ class varpot:
             for v in self.getvars():
                 if v in self.tablad:
                     for p in self.tablad[v]:
-                        n = len(p.listavar)
-                        for y in p.listavar:
+                        n = len(p.getvars())
+                        for y in p.getvars():
                             bue[y] += 1/n
 
                 
@@ -1111,7 +1120,7 @@ class varpot:
             (exact,lista,listaconvar) = u.marginaliza(self.get(var).copy(),var,self.partir,M,Q) #EEDM
 
             
-            if exact and lista and not lista[0].listavar:
+            if exact and lista and not lista[0].getvars():
                 if lista[0].contradict():
                     print ("contradict")
                     self.anula()    
@@ -1122,7 +1131,7 @@ class varpot:
 
                     self.anula()
                 else:
-                    # print(p.listavar)
+                    # print(p.getvars())
                     self.insertar(p)     
 
             self.borrarv(var)
@@ -1154,7 +1163,7 @@ class varpot:
                 self.anula()
                 return (True,lista,listaconvar)
             
-            if exact and lista and not lista[0].listavar:
+            if exact and lista and not lista[0].getvars():
                 if lista[0].contradict():
                     self.anula()    
                     return(True,lista,listaconvar)
@@ -1176,7 +1185,7 @@ class varpot:
                     for p in self.tablad[v]:
                         if v in self.tabla:
                             for q in self.tabla[v]:
-                                dif = set(p.listavar)-set(q.listavar)
+                                dif = set(p.getvars())-set(q.getvars())
                                 if len(dif)==1:
                                     z = dif.pop()
                                     if self.varpos[v] < self.varpos[z]:
@@ -1193,14 +1202,14 @@ class varpot:
                         self.insertar(q)
 
         def esta(self,p):
-            if not p.listavar:
+            if not p.getvars():
                 if p.trivial():
                     return False
                 if p.contradict() and self.contradict:
                     return True
                 else:
                     return False
-            v = p.listavar[0]
+            v = p.getvars()[0]
             if v in self.tabla and p in self.tabla[v]:
                 return True
             if v in self.tablad and p in self.tablad[v]:
@@ -1208,7 +1217,7 @@ class varpot:
             return False
 
         def estad(self,p):
-            if not p.listavar:
+            if not p.getvars():
                 if p.trivial():
                     return False
                 if p.contradict() and self.contradict:
@@ -1216,7 +1225,7 @@ class varpot:
                 else:
                     return False
             
-            for v in p.listavar:
+            for v in p.getvars():
 
                 if  p in self.tablad.get(v,[]):
                     
@@ -1224,7 +1233,7 @@ class varpot:
             return False
 
         def pos(self,p):
-            return min([self.posvar[x] for x in p.listavar])
+            return min([self.posvar[x] for x in p.getvars()])
   
  
         def marginalizaset(self,vars, Q = 4, M=15, verb = False):
@@ -1321,16 +1330,16 @@ class varpot:
                     
 
                     # for p in list1:
-                    #     print("lista 1", p.listavar)
+                    #     print("lista 1", p.getvars())
                     # for p in list2:
-                    #     print("lista 2", p.listavar)    
+                    #     print("lista 2", p.getvars())    
                   
 
                     for p in list1:
-                        # print(p.listavar)
+                        # print(p.getvars())
                         trabajo.eliminar(p)
                     for p in list2:
-                        # print(p.listavar)
+                        # print(p.getvars())
 
                         trabajo.eliminar(p)
                     n = len(list1) + len(list2)
@@ -1341,15 +1350,15 @@ class varpot:
                         if verb:
                             print("incluir ")
                         lists = small.tablad.get(var,[])
-                        lists2 = list(filter(lambda x: set(x.listavar) <= set(vorig), lists))
+                        lists2 = list(filter(lambda x: set(x.getvars()) <= set(vorig), lists))
                         if lists2:
                             if verb:
                                 print("heredo determinismo", len(list1))
                            
-                            p = min(lists2, key = lambda x: len(x.listavar))
+                            p = min(lists2, key = lambda x: len(x.getvars()))
                             list2.append(p)
                             # if solved:
-                            #     print("inserto p ", p.listavar)
+                            #     print("inserto p ", p.getvars())
                             #     self.insertar(p, vc = var)
                                 # sleep(3)
                                
@@ -1369,7 +1378,7 @@ class varpot:
                         if verb:
                             print("determinista")
                         pd+=1
-                        pivote = min(list2, key = lambda x: len(x.listavar))
+                        pivote = min(list2, key = lambda x: len(x.getvars()))
                         if n<=1:
                             h = pivote.borra([var], inplace = False)
                             (h,l1) = trabajo.simplificat(h)
@@ -1385,8 +1394,8 @@ class varpot:
                             for p in list1:
                                 
 
-                                pivote = min(list2, key=lambda x: len(set(p.listavar).union(set(x.listavar))))
-                                if len(set(p.listavar).union(set(pivote.listavar)))<= Q:
+                                pivote = min(list2, key=lambda x: len(set(p.getvars()).union(set(x.getvars()))))
+                                if len(set(p.getvars()).union(set(pivote.getvars())))<= Q:
                                     h = pivote.combina(p, inplace = False)
                                     h.borra([var], inplace =True)
                                     (h,l1) = trabajo.simplificat(h)
@@ -1403,11 +1412,11 @@ class varpot:
                                 else:
                                     traba.append(p)
                             while len(list2) > 1:
-                                list2.sort(key = lambda x :  len(x.listavar) )
+                                list2.sort(key = lambda x :  len(x.getvars()) )
                                 p = list2.pop()
-                                pivote =  min(list2, key=lambda x: len(set(p.listavar).union(set(x.listavar))))
+                                pivote =  min(list2, key=lambda x: len(set(p.getvars()).union(set(x.getvars()))))
                                 
-                                if len(set(p.listavar).union(set(pivote.listavar)))<= Q:
+                                if len(set(p.getvars()).union(set(pivote.getvars())))<= Q:
                                     h = pivote.combina(p, inplace = False)
                                     h.borra([var], inplace =True)
                                     (h,l1) = trabajo.simplificat(h)
@@ -1432,7 +1441,7 @@ class varpot:
                                     h = p.borra([var], inplace=False)
                                     (h,l1) = trabajo.simplificat(h)
                                     (h,l1) = small.simplificat(h)
-                                    # print(len(h.listavar),len(l1))
+                                    # print(len(h.getvars()),len(l1))
                                     # sleep(1)
                                     nd = nd+  trabajo.insertar(h,small)
                                     nuevas.append(h)
@@ -1464,7 +1473,7 @@ class varpot:
                                 #     qn = r[1]
                                 
                                 #     trabajo.insertar(qn)
-                                if len(set(h.listavar).union(set(q.listavar)))<= Q or not h.listavar:
+                                if len(set(h.getvars()).union(set(q.getvars())))<= Q or not h.getvars():
                                     h.combina(q,inplace=True)
                                 else:
                                     h.borra([var],inplace=True)
@@ -1475,10 +1484,10 @@ class varpot:
                                     h.combina(q,inplace=True)
 
                             h.borra([var], inplace=True)
-                            # print(len(h.listavar))
+                            # print(len(h.getvars()))
                             (h,l1) = trabajo.simplificat(h)
                             (h,l1) = small.simplificat(h)
-                            # print(len(h.listavar),len(l1))
+                            # print(len(h.getvars()),len(l1))
                             # sleep(1)
                             nd = nd+  trabajo.insertar(h, small)
                             nuevas.append(h)
@@ -1489,12 +1498,12 @@ class varpot:
 
                     for p in nd:
                         porins = porins + small.insertar(p)
-                        if len(p.listavar)<=2:
+                        if len(p.getvars())<=2:
                             self.insertar(p)
         
 
                     for p in nuevas:
-                        if not p in nd and len(p.listavar)<=M:
+                        if not p in nd and len(p.getvars())<=M:
                             porins = porins +small.insertar(p, small)
 
 
@@ -1589,13 +1598,13 @@ class varpot:
                 # for v in vars:
                 #     if v in small.tablad and small.tablad[v]:
                 #         for p in small.tablad[v]:
-                #             if len(p.listavar)<=20:
+                #             if len(p.getvars())<=20:
                 #                 trabajo.insertar(p)
 
                 # for v in vars:
                 #     if not v in trabajo.tablad or not trabajo.tablad[v]:
                 #         if v in small.tablad and small.tablad[v]:
-                #             p = min(small.tablad[v], key = lambda x: len(x.listavar))
+                #             p = min(small.tablad[v], key = lambda x: len(x.getvars()))
                 #             trabajo.insertar(p)
             
                 vorig = vars.copy()
@@ -1632,24 +1641,24 @@ class varpot:
                     list2 = trabajo.getd(var)
 
                     # for p in list1:
-                    #     print("lista 1", p.listavar)
+                    #     print("lista 1", p.getvars())
                     # for p in list2:
-                    #     print("lista 2", p.listavar)    
+                    #     print("lista 2", p.getvars())    
 
                     for p in list1:
-                        # print(p.listavar)
+                        # print(p.getvars())
                         trabajo.eliminar(p)
                     for p in list2:
-                        # print(p.listavar)
+                        # print(p.getvars())
 
                         trabajo.eliminar(p)
 
                     if not list2 and len(list1)>3:
                             lists = small.tablad.get(var,[])
-                            lists2 = list(filter(lambda x: set(x.listavar) <= set(vorig), lists))
+                            lists2 = list(filter(lambda x: set(x.getvars()) <= set(vorig), lists))
                             if lists2:
                                 print("heredo determinismo", len(list1))
-                                p = min(lists2, key = lambda x: len(x.listavar))
+                                p = min(lists2, key = lambda x: len(x.getvars()))
                                 list2.append(p)
                             
 
@@ -1661,7 +1670,7 @@ class varpot:
                     if list2:
                         det = True
                         print("determinista")
-                        pivote = min(list2, key = lambda x: len(x.listavar))
+                        pivote = min(list2, key = lambda x: len(x.getvars()))
                         if n<=1:
                             h = pivote.borra([var], inplace = False)
                             h = small.simplifica(h)
@@ -1672,8 +1681,8 @@ class varpot:
                             for p in list1:
                                 
 
-                                pivote = min(list2, key=lambda x: len(set(p.listavar).union(set(x.listavar))))
-                                if len(set(p.listavar).union(set(pivote.listavar)))<= Q:
+                                pivote = min(list2, key=lambda x: len(set(p.getvars()).union(set(x.getvars()))))
+                                if len(set(p.getvars()).union(set(pivote.getvars())))<= Q:
                                     h = pivote.combina(p, inplace = False)
                                     h.borra([var], inplace =True)
                                     h = small.simplifica(h)
@@ -1685,11 +1694,11 @@ class varpot:
                                     solved = False
                                     traba.append(p)
                             while len(list2) > 1:
-                                list2.sort(key = lambda x :  len(x.listavar) )
+                                list2.sort(key = lambda x :  len(x.getvars()) )
                                 p = list2.pop()
-                                pivote =  min(list2, key=lambda x: len(set(p.listavar).union(set(x.listavar))))
+                                pivote =  min(list2, key=lambda x: len(set(p.getvars()).union(set(x.getvars()))))
                                 
-                                if len(set(p.listavar).union(set(pivote.listavar)))<= Q:
+                                if len(set(p.getvars()).union(set(pivote.getvars())))<= Q:
                                     h = pivote.combina(p, inplace = False)
                                     h.borra([var], inplace =True)
                                     h = small.simplifica(h)
@@ -1726,7 +1735,7 @@ class varpot:
                                 #     qn = r[1]
                                 
                                 #     trabajo.insertar(qn)
-                                if len(set(h.listavar).union(set(q.listavar)))<= Q or not h.listavar:
+                                if len(set(h.getvars()).union(set(q.getvars())))<= Q or not h.getvars():
                                     h.combina(q,inplace=True)
                                 else:
                                     h.borra([var],inplace=True)
@@ -1748,7 +1757,7 @@ class varpot:
                         nde = True
 
                     for p in nuevas:
-                        if not p in nd and len(p.listavar)<=M:
+                        if not p in nd and len(p.getvars())<=M:
                             small.insertar(p, small)
 
                     
@@ -1778,7 +1787,7 @@ class varpot:
             lista = []
             for v in self.tabla:
                 for p in self.tabla[v]:
-                    if min(p.listavar) == v:
+                    if min(p.getvars()) == v:
                         lista.append(p)
             return lista
 
@@ -1787,25 +1796,25 @@ class varpot:
             mat = 0
             if v in self.tablad and self.tablad[v]:
                 # print(self.tablad[v])
-                p = min (self.tablad[v], key = lambda x: len(x.listavar))
+                p = min (self.tablad[v], key = lambda x: len(x.getvars()))
                 for q in self.tablad[v]:
                     if not q==p:
-                        mat += 2**len(set(p.listavar).union(q.listavar)) - 2**(len(q.listavar))
+                        mat += 2**len(set(p.getvars()).union(q.getvars())) - 2**(len(q.getvars()))
                 if v in self.tabla:
                     for q in self.tabla[v]:
-                        if len(set(p.listavar).union(q.listavar))> mat:
-                            mat += 2**len(set(p.listavar).union(q.listavar)) - 2**(len(q.listavar))
+                        if len(set(p.getvars()).union(q.getvars()))> mat:
+                            mat += 2**len(set(p.getvars()).union(q.getvars())) - 2**(len(q.getvars()))
                 return mat
 
             sset = set()
             if v in self.tabla:
                 for q in self.tabla[v]:
-                    sset.update(set(q.listavar))
-                    mat += - 2**(len(q.listavar))
+                    sset.update(set(q.getvars()))
+                    mat += - 2**(len(q.getvars()))
             if v in self.tablad:
                 for q in self.tablad[v]:
-                    sset.update(set(q.listavar))
-                    mat += - 2**(len(q.listavar))
+                    sset.update(set(q.getvars()))
+                    mat += - 2**(len(q.getvars()))
 
             return (mat + 2**(len(sset)))
 
@@ -1817,31 +1826,31 @@ class varpot:
             mat = 0
             lista = self.getd(v)
             
-            lista2 = list(filter(lambda x: set(x.listavar) <=rest, small.tablad.get(v,[])))
+            lista2 = list(filter(lambda x: set(x.getvars()) <=rest, small.tablad.get(v,[])))
 
             if lista2:
-                p = min(lista2, key = lambda x: len(x.listavar))
+                p = min(lista2, key = lambda x: len(x.getvars()))
                 lista.append(p)
             if lista:
                 # print(self.tablad[v])
-                p = min (lista, key = lambda x: len(x.listavar))
+                p = min (lista, key = lambda x: len(x.getvars()))
                 for q in lista:
-                    if len(set(p.listavar).union(q.listavar))> mat:
-                        mat = len(set(p.listavar).union(q.listavar))
+                    if len(set(p.getvars()).union(q.getvars()))> mat:
+                        mat = len(set(p.getvars()).union(q.getvars()))
                 if v in self.tabla:
                     for q in self.tabla[v]:
-                        if len(set(p.listavar).union(q.listavar))> mat:
-                            mat = len(set(p.listavar).union(q.listavar))
+                        if len(set(p.getvars()).union(q.getvars()))> mat:
+                            mat = len(set(p.getvars()).union(q.getvars()))
 
                 return mat
 
             sset = set()
             if v in self.tabla:
                 for q in self.tabla[v]:
-                    sset.update(set(q.listavar))
+                    sset.update(set(q.getvars()))
             if v in self.tablad:
                 for q in self.tablad[v]:
-                    sset.update(set(q.listavar))
+                    sset.update(set(q.getvars()))
             return (len(sset))
 
                     
@@ -1851,23 +1860,23 @@ class varpot:
             mat = 0
             if v in self.tablad and self.tablad[v]:
                 # print(self.tablad[v])
-                p = min (self.tablad[v], key = lambda x: len(x.listavar))
+                p = min (self.tablad[v], key = lambda x: len(x.getvars()))
                 for q in self.tablad[v]:
-                    if len(set(p.listavar).union(q.listavar))> mat:
-                        mat = len(set(p.listavar).union(q.listavar))
+                    if len(set(p.getvars()).union(q.getvars()))> mat:
+                        mat = len(set(p.getvars()).union(q.getvars()))
                 if v in self.tabla:
                     for q in self.tabla[v]:
-                        if len(set(p.listavar).union(q.listavar))> mat:
-                            mat = len(set(p.listavar).union(q.listavar))
+                        if len(set(p.getvars()).union(q.getvars()))> mat:
+                            mat = len(set(p.getvars()).union(q.getvars()))
                 return mat
 
             sset = set()
             if v in self.tabla:
                 for q in self.tabla[v]:
-                    sset.update(set(q.listavar))
+                    sset.update(set(q.getvars()))
             if v in self.tablad:
                 for q in self.tablad[v]:
-                    sset.update(set(q.listavar))
+                    sset.update(set(q.getvars()))
 
             return (len(sset))
 
@@ -1986,12 +1995,12 @@ class varpot:
                     if verb:
                         print("incluir ")
                     lists = small.tablad.get(var,[])
-                    lists2 = list(filter(lambda x: set(x.listavar) <= set(vorig), lists))
+                    lists2 = list(filter(lambda x: set(x.getvars()) <= set(vorig), lists))
                     if lists2:
                         if verb:
                             print("heredo determinismo", len(list1))
                         
-                        p = min(lists2, key = lambda x: len(x.listavar))
+                        p = min(lists2, key = lambda x: len(x.getvars()))
                         list2.append(p)
                        
 
@@ -2002,7 +2011,7 @@ class varpot:
                     if verb:
                         print("determinista")
                     pd+=1
-                    pivote = min(list2, key = lambda x: len(x.listavar))
+                    pivote = min(list2, key = lambda x: len(x.getvars()))
                     if n<=1:
                         h = pivote.borra([var], inplace = False)
                         (h,l1) = trabajo.simplificat(h)
@@ -2017,8 +2026,8 @@ class varpot:
                         for p in list1:
                             
 
-                            pivote = min(list2, key=lambda x: len(set(p.listavar).union(set(x.listavar))))
-                            if len(set(p.listavar).union(set(pivote.listavar)))<= QV:
+                            pivote = min(list2, key=lambda x: len(set(p.getvars()).union(set(x.getvars()))))
+                            if len(set(p.getvars()).union(set(pivote.getvars())))<= QV:
                                 h = pivote.combina(p, inplace = False)
                                 h.borra([var], inplace =True)
                                 (h,l1) = trabajo.simplificat(h)
@@ -2034,11 +2043,11 @@ class varpot:
                             else:
                                 traba.append(p)
                         while len(list2) > 1:
-                            list2.sort(key = lambda x :  len(x.listavar) )
+                            list2.sort(key = lambda x :  len(x.getvars()) )
                             p = list2.pop()
-                            pivote =  min(list2, key=lambda x: len(set(p.listavar).union(set(x.listavar))))
+                            pivote =  min(list2, key=lambda x: len(set(p.getvars()).union(set(x.getvars()))))
                             
-                            if len(set(p.listavar).union(set(pivote.listavar)))<= QV:
+                            if len(set(p.getvars()).union(set(pivote.getvars())))<= QV:
                                 h = pivote.combina(p, inplace = False)
                                 h.borra([var], inplace =True)
                                 (h,l1) = trabajo.simplificat(h)
@@ -2061,7 +2070,7 @@ class varpot:
                                 h = p.borra([var], inplace=False)
                                 (h,l1) = trabajo.simplificat(h)
                                 (h,l1) = small.simplificat(h)
-                                # print(len(h.listavar),len(l1))
+                                # print(len(h.getvars()),len(l1))
                                 # sleep(1)
                                 nd = nd+  trabajo.insertar(h,small)
                                 nuevas.append(h)
@@ -2084,7 +2093,7 @@ class varpot:
                     if list1:
                         for q in list1:
                         
-                            if len(set(h.listavar).union(set(q.listavar)))<= QV or not h.listavar:
+                            if len(set(h.getvars()).union(set(q.getvars())))<= QV or not h.getvars():
                                 h.combina(q,inplace=True)
                             else:
                                 h.borra([var],inplace=True)
@@ -2105,12 +2114,12 @@ class varpot:
 
                 for p in nd:
                     small.insertar(p)
-                    if len(p.listavar)<=2:
+                    if len(p.getvars())<=2:
                         self.insertar(p)
 
 
                 for p in nuevas:
-                    if not p in nd and len(p.listavar)<=M:
+                    if not p in nd and len(p.getvars())<=M:
                         small.insertar(p, small)
             return (solved,orden)
 
@@ -2153,7 +2162,7 @@ class varpot:
 
                 if list2:
                    
-                    pivote = min(list2, key = lambda x: len(x.listavar))
+                    pivote = min(list2, key = lambda x: len(x.getvars()))
                     if n<=1:
                         h = pivote.borra([var], inplace = False)
                         nd = nd + trabajo.insertard(h)
@@ -2165,8 +2174,8 @@ class varpot:
                         for p in list1:
                             
 
-                            pivote = min(list2, key=lambda x: len(set(p.listavar).union(set(x.listavar))))
-                            if len(set(p.listavar).union(set(pivote.listavar)))<= Q:
+                            pivote = min(list2, key=lambda x: len(set(p.getvars()).union(set(x.getvars()))))
+                            if len(set(p.getvars()).union(set(pivote.getvars())))<= Q:
                                 h = pivote.combina(p, inplace = False)
                                 h.borra([var], inplace =True)
                                 nd = nd + trabajo.insertar(h)
@@ -2178,12 +2187,12 @@ class varpot:
 
                             else:
                                 traba.append(p)
-                        list2.sort(key = lambda x :  len(x.listavar) )
+                        list2.sort(key = lambda x :  len(x.getvars()) )
 
                         while len(list2) > 1:
                             p = list2.pop()
-                            pivote =  min(list2, key=lambda x: len(set(p.listavar).union(set(x.listavar))))
-                            if len(set(p.listavar).union(set(pivote.listavar)))<= Q:
+                            pivote =  min(list2, key=lambda x: len(set(p.getvars()).union(set(x.getvars()))))
+                            if len(set(p.getvars()).union(set(pivote.getvars())))<= Q:
                                 h = pivote.combina(p, inplace = False)
                                 h.borra([var], inplace =True)
                                 nd = nd+  trabajo.insertar(h)
@@ -2218,7 +2227,7 @@ class varpot:
                     if list1:
                         for q in list1:
                         
-                            if len(set(h.listavar).union(set(q.listavar)))<= Q or not h.listavar:
+                            if len(set(h.getvars()).union(set(q.getvars())))<= Q or not h.getvars():
                                 h.combina(q,inplace=True)
                             else:
                                 h.borra([var],inplace=True)
@@ -2280,6 +2289,7 @@ class varpot:
                 n = len(list1) + len(list2)
 
                 combinaincluidas(list1, K=0)
+                eliminaincluidas(list1,list2)
                 
                 
                        
@@ -2288,7 +2298,7 @@ class varpot:
 
                 if list2:
                     print("determinista")
-                    pivote = min(list2, key = lambda x: len(x.listavar))
+                    pivote = min(list2, key = lambda x: len(x.getvars()))
                     res.insertarb2(pivote)
                     if n<=1:
                         h = pivote.borra([var], inplace = False)
@@ -2300,8 +2310,8 @@ class varpot:
                         for p in list1:
                                 
 
-                                pivote = min(list2, key=lambda x: len(set(p.listavar).union(set(x.listavar))))
-                                if len(set(p.listavar).union(set(pivote.listavar)))<= Q:
+                                pivote = min(list2, key=lambda x: len(set(p.getvars()).union(set(x.getvars()))))
+                                if len(set(p.getvars()).union(set(pivote.getvars())))<= Q:
                                     h = pivote.combina(p, inplace = False)
                                     h.borra([var], inplace =True)
                                     trabajo.insertarb2(h)
@@ -2312,13 +2322,13 @@ class varpot:
                                         
 
 
-                        list2.sort(key = lambda x :  len(x.listavar) )
+                        list2.sort(key = lambda x :  len(x.getvars()) )
 
                         while len(list2) > 1:
                                 p = list2.pop()
-                                pivote =  min(list2, key=lambda x: len(set(p.listavar).union(set(x.listavar))))
+                                pivote =  min(list2, key=lambda x: len(set(p.getvars()).union(set(x.getvars()))))
                                 
-                                if len(set(p.listavar).union(set(pivote.listavar)))<= Q:
+                                if len(set(p.getvars()).union(set(pivote.getvars())))<= Q:
                                     h = pivote.combina(p, inplace = False)
                                     h.borra([var], inplace =True)
                                     trabajo.insertarb2(h)
@@ -2342,6 +2352,105 @@ class varpot:
 
 
             return res
+        
+        def borra(self,Q=10):
+            
+            vorig  = self.getvars()
+            trabajo = self
+            compil = []
+            orden = []
+            
+            while vorig and not self.contradict: 
+                var = trabajo.siguientep(vorig)
+                print("var ", var, len(vorig),  trabajo.tad(var))
+
+                list1 = trabajo.get(var)
+                list2 = trabajo.getd(var)
+
+                
+                orden.append(var)
+                
+
+
+                for p in list1:
+                    trabajo.eliminar(p)
+                for p in list2:
+                    trabajo.eliminar(p)
+
+                n = len(list1) + len(list2)
+
+                combinaincluidas(list1, K=0)
+                eliminaincluidas(list1,list2)
+                
+                
+                       
+
+                vorig.discard(var)
+
+                if list2:
+                    print("determinista")
+                    pivote = min(list2, key = lambda x: len(x.getvars()))
+                    compil.append([pivote])
+                    if n<=1:
+                        h = pivote.borra([var], inplace = False)
+                        if len(h.getvars())>Q:
+                            t = creadesdetabla(h,Q)
+                            h = t
+
+                        trabajo.insertarb2(h)
+                        
+                            
+                    
+                    else:
+                        for p in list1:
+                                
+
+                                pivote = min(list2, key=lambda x: len(set(p.getvars()).union(set(x.getvars()))))
+                                
+                                h = pivote.combina(p, inplace = False)
+                                h.borra([var], inplace =True)
+
+                                if len(h.getvars())>Q:
+                                    t = creadesdetabla(h,Q)
+                                    h = t
+
+                                trabajo.insertarb2(h)
+                                
+                                
+                                        
+
+
+                        list2.sort(key = lambda x :  len(x.getvars()) )
+
+                        while len(list2) > 1:
+                                p = list2.pop()
+                                pivote =  min(list2, key=lambda x: len(set(p.getvars()).union(set(x.getvars()))))
+                                
+                                h = pivote.combina(p, inplace = False)
+                                h.borra([var], inplace =True)
+                                if len(h.getvars())>Q:
+                                    t = creadesdetabla(h,Q)
+                                    h = t
+                                    trabajo.insertarb2(h)
+                                
+
+                            
+
+                elif list1:
+                    h = nodoTabla([])        
+
+                    while list1:
+                        r = list1.pop()
+                        h.combina(r, inplace=True)
+                    h.borra([var], inplace =True)
+                    trabajo.insertarb2(h)
+
+
+
+
+
+            return res
+
 
         def siguienteb(self,config, pos):
 
@@ -2353,7 +2462,7 @@ class varpot:
             vars = set(map(abs,config))
             s = 0
             for p in lista:
-                dif = set(p.listavar) - vars
+                dif = set(p.getvars()) - vars
                 if len(dif) > 1:
                     s+= 1.0/(len(dif) -1)
                 else:
