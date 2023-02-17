@@ -35,7 +35,10 @@ class nodoTabla:
     
     def copia(self):
         result = nodoTabla(self.listavar.copy())
-        result.tabla = self.tabla.copy()
+        if isinstance(self.tabla,boolean):
+            result.tabla = self.tabla
+        else:
+            result.tabla = self.tabla.copy()
         return result
     
     def getvars(self):
@@ -138,6 +141,11 @@ class nodoTabla:
 
 
     def combina(self,op,inplace = False, des= False):
+        from arboltabla import arbol
+
+        if isinstance(op,arbol):
+            return op.combina(self,inplace)
+
         result = self if inplace else self.copia()
         if isinstance(op,boolean):
             if op:
@@ -145,12 +153,12 @@ class nodoTabla:
             else:
                 result.tabla = result.tabla & op
                 return result
-
+        
         if not des:
             op = op.copia()
         extra = set(op.getvars()) - set(result.getvars())
         if extra:
-                slice_ = [slice(None)] * len(result.listavar)
+                slice_ = [slice(None)] * len(result.getvars())
                 slice_.extend([np.newaxis] * len(extra))
 
                 result.tabla = result.tabla[tuple(slice_)]
@@ -186,11 +194,14 @@ class nodoTabla:
         t0 = self.reduce([v])
         t1 = self.reduce([-v])
 
+       
+
         t = t0.combina(t1, inplace=False)
 
         if t.contradict():
             return True
         else:
+
             return False
 
     def contenida(self,listanodos):
@@ -312,10 +323,17 @@ class nodoTabla:
         values = filter(lambda x: abs(x) in  self.listavar, val)
         phi = self if inplace else nodoTabla([])
 
+        
         values = [
                 (abs(var), 0 if var<0 else 1) for var in values
             ]
-
+        
+        if not values:
+            if inplace:
+                return self
+            else:
+                return self.copia()
+            
         var_index_to_del = []
         slice_ = [slice(None)] * len(self.listavar)
         for var, state in values:
@@ -441,8 +459,11 @@ class nodoTabla:
         return (x0,x1)
 
     def anula(self):
+        
+        
+        
         self.listavar = []
-        self.tabla = False
+        self.tabla = np.zeros(dtype = boolean, shape = ())
 
     def trivial(self):
         return  np.amin(self.tabla)

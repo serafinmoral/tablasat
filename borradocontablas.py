@@ -172,7 +172,8 @@ def main(prob, Previo=True, Mejora=False): #EDM
             print("i = ",i)
             back.minid(i)
 
-        back.borra(10)
+
+        back.borra(Q=10)
 
       
 

@@ -587,7 +587,7 @@ class varpot:
 
             for q in lista:
                 sq = set(q.getvars())
-                if  sq==svar:
+                if  sq<=svar:
                     p.combina(q, inplace=True)
                     self.eliminar(q)
 
@@ -2356,9 +2356,15 @@ class varpot:
         def borra(self,Q=10):
             
             vorig  = self.getvars()
-            trabajo = self
+            trabajo = self.copia()
             compil = []
             orden = []
+
+
+         
+
+
+            
             
             while vorig and not self.contradict: 
                 var = trabajo.siguientep(vorig)
@@ -2367,6 +2373,7 @@ class varpot:
                 list1 = trabajo.get(var)
                 list2 = trabajo.getd(var)
 
+                print(len(list1),len(list2))
                 
                 orden.append(var)
                 
@@ -2393,7 +2400,7 @@ class varpot:
                     compil.append([pivote])
                     if n<=1:
                         h = pivote.borra([var], inplace = False)
-                        if len(h.getvars())>Q:
+                        if isinstance(h,nodoTabla) and len(h.getvars())>Q:
                             t = creadesdetabla(h,Q)
                             h = t
 
@@ -2407,10 +2414,10 @@ class varpot:
 
                                 pivote = min(list2, key=lambda x: len(set(p.getvars()).union(set(x.getvars()))))
                                 
-                                h = pivote.combina(p, inplace = False)
+                                h = pivote.combina(p)
                                 h.borra([var], inplace =True)
 
-                                if len(h.getvars())>Q:
+                                if  isinstance(h,nodoTabla) and len(h.getvars())>Q:
                                     t = creadesdetabla(h,Q)
                                     h = t
 
@@ -2421,6 +2428,7 @@ class varpot:
 
 
                         list2.sort(key = lambda x :  len(x.getvars()) )
+                        
 
                         while len(list2) > 1:
                                 p = list2.pop()
@@ -2428,28 +2436,40 @@ class varpot:
                                 
                                 h = pivote.combina(p, inplace = False)
                                 h.borra([var], inplace =True)
-                                if len(h.getvars())>Q:
+                                if isinstance(h,nodoTabla) and len(h.getvars())>Q:
                                     t = creadesdetabla(h,Q)
                                     h = t
-                                    trabajo.insertarb2(h)
+                                trabajo.insertarb2(h)
                                 
 
                             
 
                 elif list1:
                     h = nodoTabla([])        
+                    combinaincluidas(list1, K=1)
 
-                    while list1:
-                        r = list1.pop()
-                        h.combina(r, inplace=True)
-                    h.borra([var], inplace =True)
-                    trabajo.insertarb2(h)
+                    if len(list1)==1:
+                        h = list1[0]
+                        h = h.borra([var])
+                        trabajo.insertarb2(h)
+
+                    else:
+                        nt = len(list1)
+                        for i in range(nt):
+                            for j in range(i+1,nt):
+                                h1 = list1[i]
+                                h2 = list1[j]
+                                h = h1.combina(h2)
+                                h.borra([var],  inplace =True)
+                                trabajo.insertarb2(h)
+
+
+                    
 
 
 
 
 
-            return res
 
 
         def siguienteb(self,config, pos):
