@@ -56,7 +56,25 @@ class arbol:
         return res
 
 
-    
+    def size(self):
+        if self.var==0:
+            return 1
+        else:
+            return self.hijos[0].size()+self.hijos[1].size()+1
+        
+
+    def neg(self):
+        result = arbol()
+        if self.var == 0:
+            result.value = self.value.neg()
+        else:
+            result.var = self.var
+            result.hijos[0] = self.hijos[0].neg()
+            result.hijos[1] = self.hijos[1].neg()
+        return result
+
+
+
     def getvars(self):
         res = set()
         if self.var ==0:
@@ -76,17 +94,42 @@ class arbol:
         if self.hijos[0].trivial() and self.hijos[1].trivial():
             return True
         return False
+    
+    def totable(self):
+        if self.var == 0:
+            return self.value
+        else:
+            v = self.var
+            t0 = self.hijos[0].totable()
+            t1 = self.hijos[1].totable()
+            h0 = t0.suma(potdev(v))
+            h1 = t1.suma(potdev(-v))
+            return h0.combina(h1)
+
+
+
+
+    def equivalente(self,p):
+       
+       
+        if self.suma(p.neg()).trivial() and p.suma(self.neg()).trivial():
+            return True
+        else:
+            return False
         
 
     def poda(self,Q=20):
+        
         if self.var == 0:
             if len(self.value.listavar)<= Q:
                 return
             else:
-                h = creadesdetabla(self.value)
+                h = creadesdetabla(self.value,Q)
                 self.value = h.value
                 self.var = h.var
                 self.hijos = h.hijos
+
+
                 return
         self.hijos[0].poda(Q)
         self.hijos[1].poda(Q)
@@ -102,14 +145,15 @@ class arbol:
                 self.var = 0
                 self.hijos = [None,None]
                 self.value= nodoTabla([])
+
                 return
 
-            if len(set(self.hikos[0].value.listavar).union(set(self.hikos[1].value.listavar)))<=Q-1:
+            if len(set(self.hijos[0].value.listavar).union(set(self.hijos[1].value.listavar)))<=Q-1:
                 v = self.var
                 self.var = 0
-                self.hijos = [None,None]
                 r0 = self.hijos[0].value.suma(potdev(v))
                 r1 = self.hijos[1].value.suma(potdev(-v))
+                self.hijos = [None,None]
                 self.value = r0.combina(r1)
                 return
         
@@ -132,94 +176,112 @@ class arbol:
         res = arbol()
         res.var=v
         res.hijos[0] = self.hijos[0].reduce(lv)
-        res.hijos[1] = self.hijos[0].reduce(lv)
+        res.hijos[1] = self.hijos[1].reduce(lv)
         return res
 
-    def combina(self,t, inplace = False, Q= 10):
+    def combina(self,t, Q=10,con = []):
+        res = arbol()
     
-        res = self if inplace else arbol()
+
         if isinstance(t,nodoTabla):
             if self.var == 0:
-                        value = self.value.combina(t,inplace)
-                        if res.value.contradict():
+                        value = self.value.combina(t.reduce(con))
+                        if value.contradict():
                             res.value.anula()
                             return res
                         else:
                             resq = creadesdetabla(value,Q)
-                            
-                    
                             res.var = resq.var
                             res.value = resq.value
                             res.hijos = resq.hijos
                         
                             return res
-
-
-
             else:
                 res.var = self.var
-                res.hijos[0] = self.hijos[0].combina(t.reduce([-self.var]),inplace,Q)
-                res.hijos[1] = self.hijos[1].combina(t.reduce([self.var]),inplace,Q)
+                con.append(-self.var)
+                res.hijos[0] = self.hijos[0].combina(t,Q,con)
+                con.pop()
+                con.append(self.var)
+
+                res.hijos[1] = self.hijos[1].combina(t,Q,con)
+                con.pop()
                 return res
-
         if t.var ==0:
-            return self.combina(t.value,inplace,Q)
+            return self.combina(t.value,Q, con)
+        
         if self.var == 0:
-            res.var = t.var
-            res.hijos[0] = self.combina(t.hijos[0],inplace,Q)
-            res.hijos[1] = self.combina(t.hijos[1],inplace,Q)
-            return res
-
-        res.var = self.var
-        res.hijos[0] = self.hijos[0].combina(t.reduce([-self.var]),inplace,Q)
-        res.hijos[1] = self.hijos[1].combina(t.reduce([self.var]),inplace,Q)
-        return res
+            h = t.reduce(con)
+            return h.combina(self)
         
 
-    def suma(self,t,inplace = False , Q= 20):
-        res = self if inplace else arbol()
+        res.var = self.var
+        con.append(-self.var)
+        res.hijos[0] = self.hijos[0].combina(t,Q)
+        con.pop()
+        con.append(self.var)
+
+        res.hijos[1] = self.hijos[1].combina(t,Q)
+        con.pop()
+
+        return res
+            
+            
+        
+
+
+
+
+    def suma(self,t, Q=10,con = []):
+        res = arbol()
+    
+
         if isinstance(t,nodoTabla):
             if self.var == 0:
-                    if len(set(t.listavar).union(set(self.value.listavar)))<=Q:
-                        res.value = self.value.suma(t,inplace)
+                        value = self.value.suma(t.reduce(con))
                         if res.value.trivial():
                             res.value = nodoTabla([])
-                        return res
-                    else:
-                        v = self.value.minentropia()
-                        res.var = v
-                        h0 = arbol()
-                        h1 = arbol()
-                        h0.value = self.value.reduce([-v])
-                        h1.value = self.value.reduce([v])
-                        res.hijos[0] = h0.suma(t.reduce([-v]),inplace,Q)
-                        res.hijos[1] = h1.suma(t.reduce([v]),inplace,Q)
-                        return res
-
-
-
+                            return res
+                        else:
+                            resq = creadesdetabla(value,Q)
+                            res.var = resq.var
+                            res.value = resq.value
+                            res.hijos = resq.hijos
+                        
+                            return res
             else:
                 res.var = self.var
-                res.hijos[0] = self.hijos[0].suma(t.reduce([-self.var]),inplace,Q)
-                res.hijos[1] = self.hijos[1].suma(t.reduce([self.var]),inplace,Q)
-                return res
+                con.append(-self.var)
+                res.hijos[0] = self.hijos[0].suma(t,Q,con)
+                con.pop()
+                con.append(self.var)
 
+                res.hijos[1] = self.hijos[1].suma(t,Q,con)
+                con.pop()
+                return res
         if t.var ==0:
-            return self.suma(t.value,inplace,Q)
+            return self.suma(t.value,Q, con)
+        
         if self.var == 0:
-            res.var = t.var
-            res.hijos[0] = self.suma(t.hijos[0],inplace,Q)
-            res.hijos[1] = self.suma(t.hijos[1],inplace,Q)
-            return res
+            h = t.reduce(con)
+            return h.suma(self)
+        
 
         res.var = self.var
-        res.hijos[0] = self.hijos[0].suma(t.reduce([-self.var]),inplace=False,Q=Q)
-        res.hijos[1] = self.hijos[1].suma(t.reduce([self.var]),inplace=False,Q=Q)
+        con.append(-self.var)
+        res.hijos[0] = self.hijos[0].suma(t,Q,con)
+        con.pop()
+        con.append(self.var)
+
+        res.hijos[1] = self.hijos[1].suma(t,Q,con)
+        con.pop()
+
         return res
+            
+            
         
                     
-    def borra(self,lv, inplace = False,Q=20):
-        res = self if inplace else arbol()
+    def borra(self,lv,Q=20):
+        res =  arbol()
         if self.var ==0:
             nlv = list(set(lv).intersection(set(self.value.listavar)))
             res.value = self.value.borra(nlv)
@@ -228,12 +290,12 @@ class arbol:
             return res
         v = self.var
         if v in lv:
-            res = self.hijos[0].suma(self.hijos[1],inplace,Q)
+            res = self.hijos[0].suma(self.hijos[1],Q)
             return res
         else:
             res.var = v
-            res.hijos[0] = self.hijos[0].borra(lv,inplace,Q)
-            res.hijos[1] = self.hijos[1].borra(lv,inplace,Q)
+            res.hijos[0] = self.hijos[0].borra(lv,Q)
+            res.hijos[1] = self.hijos[1].borra(lv,Q)
             return res
 
     def checkdetermi(self,v):
@@ -241,7 +303,7 @@ class arbol:
         t0 = self.reduce([v])
         t1 = self.reduce([-v])
 
-        t = t0.combina(t1, inplace=False, Q=20)
+        t = t0.combina(t1, Q=20)
 
         if t.contradict():
             return True
@@ -258,7 +320,7 @@ class arbol:
 
         np = self.borra([nv])
 
-
+    
 
         if not np.trivial() and np.checkdetermi(v):
             return np.minimizadep(v, seg.copy())

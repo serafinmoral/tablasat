@@ -129,7 +129,7 @@ class varpot:
                 for p in lista:
                     t = p.reduce(config)
                     if t.contradict():
-                        nueva = p.borra([var], inplace = False)
+                        nueva = p.borra([var])
                         self.insertarb(nueva)
                         level = self.level(nueva)
                         del config[-(level-oldl):]
@@ -551,7 +551,7 @@ class varpot:
 
 
                         
-        def insertarb2(self,p, Q = 20):
+        def insertarb2(self,p, Q = 10):
             if p.contradict():
                 self.anula()
                 return []
@@ -570,8 +570,8 @@ class varpot:
                     for q in self.tablad[v]:
                         lq = q.getvars()
                         if len(lq) <= n and set(lq)<= svar:
-                            h = q.combina(p,inplace=False)
-                            h.borra([v], inplace=True)
+                            h = q.combina(p)
+                            h = h.borra([v])
                             return self.insertarb2(h)
             lista = []
             lista2 = []
@@ -588,14 +588,14 @@ class varpot:
             for q in lista:
                 sq = set(q.getvars())
                 if  sq<=svar:
-                    p.combina(q, inplace=True)
+                    p = p.combina(q)
                     self.eliminar(q)
 
             if len(lp)<=Q:
                 for q in lista2:
                     sq = set(q.getvars())
                     if sq<= svar:
-                        p.combina(q,inplace=True)
+                        p = p.combina(q)
 
 
                 for v in lp:
@@ -605,7 +605,7 @@ class varpot:
                         # print("nuevo determinismo ", len(p.getvars()), len(t.getvars()))
                         if len(t.getvars())< len(lp):
                             l1 = self.insertarb2(t)
-                            q = p.borra([var],inplace = False)
+                            q = p.borra([var])
                             l2 = self.insertarb2(q)
                             return l1 + l2
                         else:
@@ -629,8 +629,8 @@ class varpot:
                                     if svar <= sq:
                                         
                                         self.eliminar(q)
-                                        h = q.combina(p, inplace = False)
-                                        h.borra([var], inplace=True)
+                                        h = q.combina(p)
+                                        h = h.borra([var])
                                         ins.append(h)
 
                             for h in ins:
@@ -2296,6 +2296,15 @@ class varpot:
 
                 vorig.discard(var)
 
+                if not list2:
+                    for p in list1:
+                        if p.checkdetermi(var):
+                            list1.remove(p)
+                            list2.add(p)
+                            print("nuevo")
+                            sleep(30)
+                            break
+
                 if list2:
                     print("determinista")
                     pivote = min(list2, key = lambda x: len(x.getvars()))
@@ -2312,8 +2321,8 @@ class varpot:
 
                                 pivote = min(list2, key=lambda x: len(set(p.getvars()).union(set(x.getvars()))))
                                 if len(set(p.getvars()).union(set(pivote.getvars())))<= Q:
-                                    h = pivote.combina(p, inplace = False)
-                                    h.borra([var], inplace =True)
+                                    h = pivote.combina(p)
+                                    h = h.borra([var])
                                     trabajo.insertarb2(h)
                                 else:
                                     print("error en limite")
@@ -2329,8 +2338,8 @@ class varpot:
                                 pivote =  min(list2, key=lambda x: len(set(p.getvars()).union(set(x.getvars()))))
                                 
                                 if len(set(p.getvars()).union(set(pivote.getvars())))<= Q:
-                                    h = pivote.combina(p, inplace = False)
-                                    h.borra([var], inplace =True)
+                                    h = pivote.combina(p)
+                                    h = h.borra([var])
                                     trabajo.insertarb2(h)
                                 
 
@@ -2343,8 +2352,8 @@ class varpot:
 
                     while list1:
                         r = list1.pop()
-                        h.combina(r, inplace=True)
-                    h.borra([var], inplace =True)
+                        h = h.combina(r)
+                    h = h.borra([var])
                     trabajo.insertarb2(h)
 
 
@@ -2377,6 +2386,7 @@ class varpot:
                 
                 orden.append(var)
                 
+        
 
 
                 for p in list1:
@@ -2403,7 +2413,8 @@ class varpot:
                         if isinstance(h,nodoTabla) and len(h.getvars())>Q:
                             t = creadesdetabla(h,Q)
                             h = t
-
+                        if isinstance(h,arbol):
+                            h.poda(Q)
                         trabajo.insertarb2(h)
                         
                             
@@ -2414,12 +2425,27 @@ class varpot:
 
                                 pivote = min(list2, key=lambda x: len(set(p.getvars()).union(set(x.getvars()))))
                                 
+                                if isinstance(p,arbol):
+                                    print ("combina arbol p", p.size())
+                                if isinstance(pivote,arbol):
+                                    print ("combina arbol pivote", pivote.size())
                                 h = pivote.combina(p)
-                                h.borra([var], inplace =True)
+                                if isinstance(h,arbol):
+                                    print ("resultado ", h.size())
+                                h = h.borra([var])
 
                                 if  isinstance(h,nodoTabla) and len(h.getvars())>Q:
                                     t = creadesdetabla(h,Q)
                                     h = t
+
+                                if isinstance(h,arbol):
+                                    if h.trivial():
+                                        print("trivial")
+                                    print("tam ", h.size())
+                                    h.poda(Q)
+                                    if h.trivial():
+                                        print("trivial")
+                                    print("tam ", h.size())
 
                                 trabajo.insertarb2(h)
                                 
@@ -2434,11 +2460,16 @@ class varpot:
                                 p = list2.pop()
                                 pivote =  min(list2, key=lambda x: len(set(p.getvars()).union(set(x.getvars()))))
                                 
-                                h = pivote.combina(p, inplace = False)
-                                h.borra([var], inplace =True)
+                                h = pivote.combina(p)
+                                h = h.borra([var])
                                 if isinstance(h,nodoTabla) and len(h.getvars())>Q:
                                     t = creadesdetabla(h,Q)
                                     h = t
+                                if isinstance(h,arbol):
+                                    print("tam ", h.size())
+                                    h.poda(Q)
+
+                                    print("tam ", h.size())
                                 trabajo.insertarb2(h)
                                 
 
@@ -2460,7 +2491,12 @@ class varpot:
                                 h1 = list1[i]
                                 h2 = list1[j]
                                 h = h1.combina(h2)
-                                h.borra([var],  inplace =True)
+                                h = h.borra([var])
+                                if isinstance(h,arbol):
+                                    print("tam ", h.size())
+                                    h.poda(Q)
+
+                                    print("tam ", h.size())
                                 trabajo.insertarb2(h)
 
 
@@ -2486,7 +2522,7 @@ class varpot:
                 if len(dif) > 1:
                     s+= 1.0/(len(dif) -1)
                 else:
-                    h = p.reduce(config, inplace=False)
+                    h = p.reduce(config)
                     if not h.trivial():
                         s+= 1000
             if s>=1000:

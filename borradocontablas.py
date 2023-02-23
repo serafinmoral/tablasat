@@ -11,6 +11,19 @@ from utils import *
 from DeterministicDeletion import *
 # from arboltablaglobal import *
 
+def test():
+    from tablaClausulas import nodoTabla
+    from arboltabla import arbol
+
+    h = np.random.rand(2,2,2,2,2)
+    t = np.random.rand(2,2,2,2,2)
+    h = h>0.5
+    t = t>0.5
+    ht = nodoTabla([1,2,3,4,5])
+    tt = nodoTabla([3,4,5,6,7])
+
+    
+
 
     
 def triangulap(pot):
@@ -134,7 +147,7 @@ def main(prob, Previo=True, Mejora=False): #EDM
         # info.solved = False
         
 
-        
+        test()
 
         prob.inicial.solved = False         
         print("entro en main")  #EDM

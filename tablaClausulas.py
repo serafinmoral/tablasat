@@ -144,14 +144,32 @@ class nodoTabla:
         from arboltabla import arbol
 
         if isinstance(op,arbol):
-            return op.combina(self,inplace)
+            return op.combina(self)
+        
+        if isinstance(self.tabla,boolean):
+            if self.tabla:
+                if inplace:
+                    self = op.copia()
+                    return self
+                else:
+                    return op.copia()
+            else:
+                if inplace:
+                    return self
+                else:
+                    return self.copia()
+            
+
+            
 
         result = self if inplace else self.copia()
-        if isinstance(op,boolean):
-            if op:
+
+        if isinstance(op.tabla,boolean):
+            if op.tabla:
                 return result
             else:
-                result.tabla = result.tabla & op
+                result.tabla = nodoTabla([])
+                result.anula()
                 return result
         
         if not des:
@@ -276,12 +294,23 @@ class nodoTabla:
 
     def suma(self,op,inplace = False, des= False):
         result = self if inplace else self.copia()
-        if isinstance(op,boolean):
+        if isinstance(op.tabla,boolean):
             if op:
                 return result
             else:
-                result.tabla = result.tabla | op
+                result.tabla = result.tabla | op.tabla
                 return result
+            
+        if isinstance(self.tabla,boolean):
+            if self.tabla:
+                return result
+            else:
+                    result = op.copia()
+                    return result
+                
+
+                
+            
 
         if not des:
             op = op.copia()
@@ -558,7 +587,7 @@ class PotencialTabla:
             res.unit = self.unit.copy()
 
             for p in self.listap:
-                print(p)
+            
                 res.listap.append(p.copia())
             return res
 

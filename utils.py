@@ -172,10 +172,12 @@ def eliminaincluidas(l1,l2):
 
     borr = []
     for p in l1:
-        for q in l2:
+        for j in range(len(l2)):
+            q = l2[j]
             if set(p.getvars())<= set(q.getvars()):
-                q.combina(p,inplace=True)
+                l2[j] = q.combina(p)
                 borr.append(p)
+                
                 break
         if p in borr:
             continue
@@ -197,6 +199,7 @@ def combinaincluidas(lista, K=0):
                 p = lista[i]
                 q = lista[j]
                 t = p.combina(q)
+                
                 lista[i] = t
                 
                 lista.remove(q)
