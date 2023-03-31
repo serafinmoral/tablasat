@@ -89,10 +89,15 @@ class nodoTabla:
                 z1  = x1/(x0+x1)
                 x = (-z0*math.log(z0) - z1*math.log(z1))
             return x
+    
+    def mincuenta(self,v):
+            (x0,x1) = self.cuenta(v)
+            return min(x0,x1)
+            
 
     def minentropia(self):
             
-            return min(self.listavar,key = lambda v: self.entropia(v))
+            return min(self.listavar,key = lambda v: self.mincuenta(v))
 
 
     def neg(self,inplace=False):
@@ -458,6 +463,19 @@ class nodoTabla:
 
         self.tabla[tuple(slice_)] = False
 
+    def checkxor(self):
+        index = np.argwhere(self.tabla)
+        even = all( sum(x) % 2==0 for x in index )
+        odd = all( sum(x) % 2==1 for x in index )
+
+        if even:
+            return (set(self.getvars()),False)
+        
+        if odd:
+            return (set(self.getvars()),True)
+        
+        return False
+            
         
 
     def borra(self,variables, inplace=False):

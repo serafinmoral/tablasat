@@ -5,7 +5,7 @@ from tablaClausulas  import *
 from time import * 
 from utils import *
 
-def creadesdetabla(t, Q=10):
+def creadesdetabla(t, Q=15):
         # r = t.minimiza(con = nodoTabla([]))
             res = arbol()
             if t.trivial():
@@ -118,7 +118,7 @@ class arbol:
             return False
         
 
-    def poda(self,Q=20):
+    def poda(self,Q=15):
         
         if self.var == 0:
             if len(self.value.listavar)<= Q:
@@ -148,6 +148,9 @@ class arbol:
 
                 return
 
+            if isinstance(self.hijos[0].value,boolean) or isinstance(self.hijos[1].value,boolean):
+                return
+
             if len(set(self.hijos[0].value.listavar).union(set(self.hijos[1].value.listavar)))<=Q-1:
                 v = self.var
                 self.var = 0
@@ -155,6 +158,49 @@ class arbol:
                 r1 = self.hijos[1].value.suma(potdev(-v))
                 self.hijos = [None,None]
                 self.value = r0.combina(r1)
+                return
+        
+    def simpli(self,Q=15, eps=0.4):
+
+        
+        if self.var == 0:
+            if (not isinstance(self.value.tabla,boolean)) and (self.value.tabla.sum() > (1-eps)*2**(len(self.value.listavar))):
+                self.value = nodoTabla([])
+                return
+            else:
+                return
+
+        ne = min(eps,1.0)
+
+                
+        self.hijos[0].simpli(Q,ne)
+        self.hijos[1].simpli(Q,ne)
+
+        if self.hijos[0].var ==0 and self.hijos[1].var ==0:
+            if self.hijos[0].value.contradict() and self.hijos[1].value.contradict():
+                self.var = 0
+                self.hijos = [None,None]
+                self.value.anula()
+                return
+
+            if self.hijos[0].value.trivial() and self.hijos[1].value.trivial():
+                self.var = 0
+                self.hijos = [None,None]
+                self.value= nodoTabla([])
+
+                return
+            
+            if isinstance(self.value.tabla,boolean):
+                return
+
+            if len(set(self.hijos[0].value.listavar).union(set(self.hijos[1].value.listavar)))<=Q-1:
+                v = self.var
+                self.var = 0
+                r0 = self.hijos[0].value.suma(potdev(v))
+                r1 = self.hijos[1].value.suma(potdev(-v))
+                self.hijos = [None,None]
+                self.value = r0.combina(r1)
+                self.simpli()
                 return
         
 
@@ -179,7 +225,7 @@ class arbol:
         res.hijos[1] = self.hijos[1].reduce(lv)
         return res
 
-    def combina(self,t, Q=10,con = []):
+    def combina(self,t, Q=25,con = []):
         res = arbol()
     
 
@@ -211,16 +257,17 @@ class arbol:
         
         if self.var == 0:
             h = t.reduce(con)
+            h.poda(Q)
             return h.combina(self)
         
 
         res.var = self.var
         con.append(-self.var)
-        res.hijos[0] = self.hijos[0].combina(t,Q)
+        res.hijos[0] = self.hijos[0].combina(t,Q,con)
         con.pop()
         con.append(self.var)
 
-        res.hijos[1] = self.hijos[1].combina(t,Q)
+        res.hijos[1] = self.hijos[1].combina(t,Q,con)
         con.pop()
 
         return res
@@ -231,14 +278,14 @@ class arbol:
 
 
 
-    def suma(self,t, Q=10,con = []):
+    def suma(self,t, Q=15,con = []):
         res = arbol()
     
 
         if isinstance(t,nodoTabla):
             if self.var == 0:
                         value = self.value.suma(t.reduce(con))
-                        if res.value.trivial():
+                        if value.trivial():
                             res.value = nodoTabla([])
                             return res
                         else:
@@ -263,6 +310,7 @@ class arbol:
         
         if self.var == 0:
             h = t.reduce(con)
+            h.poda(Q)
             return h.suma(self)
         
 
@@ -280,7 +328,7 @@ class arbol:
             
         
                     
-    def borra(self,lv,Q=20):
+    def borra(self,lv,Q=25):
         res =  arbol()
         if self.var ==0:
             nlv = list(set(lv).intersection(set(self.value.listavar)))

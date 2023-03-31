@@ -1,3 +1,9 @@
 aes_32_2_keyfind_1.cnf
+ramseycube/Q3inK08.cnf
+benchmarks-UNSAT-cnf/langford-10.cnf
+unsat/sgen1-unsat-115-100.cnf
+unsat/sgen1-unsat-151-100.cnf
+SAT_V144C560.cnf
+SAT_V153C408.cnf
 
 

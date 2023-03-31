@@ -8,6 +8,7 @@ import networkx as nx
 from SimpleClausulas import *
 from time import *
 from utils import *
+from xor import *
 from DeterministicDeletion import *
 # from arboltablaglobal import *
 
@@ -15,26 +16,54 @@ def test():
     from tablaClausulas import nodoTabla
     from arboltabla import arbol
 
-    h = np.random.rand(2,2,2,2,2)
-    t = np.random.rand(2,2,2,2,2)
-    h = h>0.5
-    t = t>0.5
-    ht = nodoTabla([1,2,3,4,5])
-    tt = nodoTabla([3,4,5,6,7])
+    h = np.random.rand(2,2,2,2,2,2)
+    t = np.random.rand(2,2,2,2,2,2)
+    h = h>0.1
+    t = t>0.1
+    ht = nodoTabla([1,2,3,4,5,6])
+    tt = nodoTabla([3,4,5,6,7,8])
+    ht.tabla = h
+    tt.tabla = t
+    ct = ht.combina(tt)
+    ha = creadesdetabla(ht,Q=2)
+    ta = creadesdetabla(tt,Q=2)
+    print(ha.size(),ta.size())
+    ca = ta.combina(ha)
+    nt = ca.totable()
+    print(nt.tabla.sum(),ct.tabla.sum())
+    print(nt.equivalente(ct))
+    ha.poda(Q=2)
+    ta.poda(Q=2)
+    print(ha.size(),ta.size())
+    ca = ta.combina(ha)
+    ca.poda(Q=2)
+    nt = ca.totable()
+    print(nt.tabla.sum(),ct.tabla.sum())
+    print(nt.equivalente(ct))
+    sa = ha.suma(ta)
+    # sa.poda(Q=2)
+    nst = sa.totable()
+    st = ht.suma(tt)
+    print(nst.tabla.sum(),st.tabla.sum())
+    print(st.equivalente(nst))
+    
 
     
 
 
+
+
+
     
-def triangulap(pot):
+def triangulap(lista):
     order = []
     clusters = []
-    borr = []
+    iorder = []
     child = []
     posvar = dict()
     total = set()
     dvar = dict()
-    for p in pot.listap:
+    for p in lista:
         con = set(p.listavar)
         total.update(con)
         for v in con:
@@ -42,19 +71,12 @@ def triangulap(pot):
                 dvar[v].append(con)
             else:
                 dvar[v] = [con]
-    n = len(total.union(pot.unit))
+    n = len(total)
     parent = [-1]*(n+1)
     for i in range(n+1):
         child.append(set())
     i= 0
-    units = pot.unit.copy()
-    while units:
-        nnode = abs(units.pop())
-        order.append(nnode)
-        clus = {nnode}
-        clusters.append(clus)
-        posvar[nnode] = i
-        i+=1
+  
     value = dict()
     totvar = dict()
     for x in dvar:
@@ -85,8 +107,12 @@ def triangulap(pot):
         del totvar[nnode]
         total.discard(nnode)
     clusters.append(set())
+    clust = set()
     for i in range(n):
             con = clusters[i]
+            oclus = clust.copy()
+            clust.update(con)
+            iorder = iorder+ list(clust-oclus)
             cons = con - {order[i]}
             if not cons:
                 parent[i] = n
@@ -95,7 +121,8 @@ def triangulap(pot):
                 pos = min(map(lambda h: posvar[h], cons))
                 parent[i] = pos
                 child[pos].add(i)
-    return (order,clusters,borr,posvar,child,parent) 
+    iorder.reverse()
+    return (order,clusters,iorder,posvar,child,parent) 
     
 def leeArchivoGlobal(Archivo):
     reader=open(Archivo,"r") 
@@ -157,16 +184,17 @@ def main(prob, Previo=True, Mejora=False): #EDM
         if Previo: #EDM
             prob.previo()       
         
-      
+
        
 
 
         
-        (prob.orden,prob.clusters,prob.borr,prob.posvar,prob.child,prob.parent) = triangulap(prob.pinicial) 
+        (prob.orden,prob.clusters,prob.borr,prob.posvar,prob.child,prob.parent) = triangulap(prob.pinicial.listap) 
 
         # prob.cuclusters()
        
-               
+        # (order,clusters,iorder,posvar,child,parent) = triangulap(back.getpotl(back.getvars()))
+           
 
         # prob.rela.mejoralocal()           
         # if Mejora:  #EDM
@@ -176,31 +204,175 @@ def main(prob, Previo=True, Mejora=False): #EDM
 
         back = prob.rela.copia()
 
+        (orden,prob.clusters,prob.borr,prob.posvar,prob.child,prob.parent) = triangulap(back.getpotl(back.getvars())) 
+
+
+        h = back.getXor()
+        back.orden = orden
+
+        xorp = xor(h)
        
-        
+        # print(xorp.compiled) 
+        # print(xorp.order)
+        ls = xorp.getTables()
 
 
-     
-        for i in [3,3,4,4,4,5,5,5,6,6,6,7,7,7,8,8,8,9,9,10,10]:
+        back.minid(30)
+
+
+        for p in h:
+           
+            back.insertar(p)
+
+
+
+
+
+        back.orden = orden
+
+       
+        # back.orden = order
+       
+
+
+        # for i in [3,3,4,4,5,3,5,3,3,6,3,7,3,4,5]:
+        #     print("i = ",i)
+        #     back.minid(i)
+
+        # back.recomputeorder()
+        # orden = back.orden.copy()
+
+        # back = prob.rela.copia()
+
+        # back.orden = orden
+
+        for i in [3,3,4,4,5,3,5,3,3,6,3,7,3,4,5]:
             print("i = ",i)
             back.minid(i)
 
 
-        back.borra(Q=10)
 
-      
+        for i in [6,3,7,3,7,3,8,3,9,3,10,3,3,4,3,4,3,4,11,12,13,14,15,14,13,12,11,10,9,8,7,6,5,4,3]:
+            print("i = ",i)
+            back.minid(i)
+        
+
+
 
 
        
+        # back.localimprove()
+
+        back.borraf(Q=5)
 
 
-        config = back.back2(30)
-        vars = set(prob.rela.getvars())
-        print(len(vars))
-        vars2 = set(map(abs,config))
-        back.compruebasol(config)
-        print("diferencia" , vars-vars2)
-        print(config)
+        print("termino borraf")
+
+        nuevo = back.copia()
+
+        print("termino copia")
+
+
+
+
+
+        # listpot = nuevo.getpotl(nuevo.getvars())
+
+        # print(len(listpot))
+
+        
+        # listac = getclusters(listpot)
+
+        # print(len(listac))
+
+        
+
+        
+        
+        # sleep(4)
+
+        # npot = nuevo.getmarginalsapr(listac,Q=5)
+
+
+        # nuevo = varpot()
+        # for p in npot:
+        #     print(2**len(p.getvars()), p.tabla.sum() )
+        #     nuevo.insertarb2(p)
+       
+
+        for i in range(10,25):
+            print("i=",i)
+            nuevo.borraf(Q=i)
+           
+
+        # listat = []
+        # (res,lista) = nuevo.borrae(Q=25)
+        # for p in lista:
+        #     print(len(p.getvars()),p.getvars())
+        #     sleep(1)
+        # listat = listat + lista
+        # while listat:
+        #     p = listat[0]
+        #     del listat[0]
+        #     print(len(p.getvars()),p.getvars())
+        #     res.insertar(p)
+        #     (res,lista) = res.borrae(Q=25)
+        #     for p in lista:
+        #         print(len(p.getvars()),p.getvars())
+        #     sleep(10)
+        #     listat = listat + lista
+
+
+        
+         
+
+
+            # listpot = nuevo.getpotl(nuevo.getvars())
+
+            # print(len(listpot))
+            # listac = getclusters(listpot)
+
+            # print(len(listac))
+            # npot = nuevo.getmarginalsapr(listac,Q=10)
+
+            # nuevo = varpot()
+            # for p in npot:
+            #     print(2**len(p.getvars()), p.tabla.sum() )
+            #     nuevo.insertarb2(p)
+
+            # sleep(20)
+
+
+
+        # for i in [3,3,4,4,5,5,3,3,6,7,8,9,10]:
+        #     print("i = ",i)
+        #     nuevo.minid(i)
+
+        # back.simplifyp(nuevo)
+
+        # nuevo.checkincluded()
+      
+        t1 = time()
+
+        
+
+
+        nuevo.borrac(Q=25)
+
+        t2 = time()
+
+        print(t2-t1)
+
+        wait = input("Press Enter to continue.")
+
+
+        # config = nuevo.back2(30)
+        # vars = set(prob.rela.getvars())
+        # print(len(vars))
+        # vars2 = set(map(abs,config))
+        # back.compruebasol(config)
+        # print("diferencia" , vars-vars2)
+        # print(config)
         
 
 

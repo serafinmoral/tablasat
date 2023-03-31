@@ -82,6 +82,11 @@ def potdev(v):
     return res
 
 
+def getclusters(lista):
+    li = [set(q.getvars()) for q in lista]
+    borraincluidos(li)
+    return li
+
 def calculaclusters1(lista,p,var):
     li = [set(q.listavar).union(p.listavar) - {var} for q in lista]
     borraincluidos(li)
@@ -90,7 +95,7 @@ def calculaclusters1(lista,p,var):
 def calculaclusters2(lista,var):
     li = []
     for p in lista:
-        s = set(p.listavar)
+        s = set(p.getvars())
         for q in lista:
             li.append(s.union(q.listavar)- {var})
     borraincluidos(li)
@@ -177,6 +182,8 @@ def eliminaincluidas(l1,l2):
             if set(p.getvars())<= set(q.getvars()):
                 l2[j] = q.combina(p)
                 borr.append(p)
+                print("no debería ")
+                sleep(4)
                 
                 break
         if p in borr:
@@ -195,10 +202,13 @@ def combinaincluidas(lista, K=0):
         j = i+1
         while j < len(lista):
             # print("lista, i, j", len(lista), i, j)
-            if len(set(lista[j].getvars()) - set(lista[i].getvars()))<=K:
+            if len(set(lista[j].getvars()) - set(lista[i].getvars()))<=K and len(set(lista[j].getvars()).union(set(lista[i].getvars())))<=25:
                 p = lista[i]
                 q = lista[j]
                 t = p.combina(q)
+                # if K==0:
+                #     print("No debería")
+                #     sleep(4)
                 
                 lista[i] = t
                 
