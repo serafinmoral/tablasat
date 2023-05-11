@@ -801,17 +801,40 @@ def leeficheroUAI(Archivo):
         nodoAdd = nodoTabla([int(i)+1 for i in cadena.split()[1:]])
         lista.append(nodoAdd)
     
-    for l in lista:
+
+    if not 'or_chain' in Archivo and not 'Promedus' in Archivo:
+        for l in lista:
+            reader.readline()
+            lee=int(int(reader.readline())/2)
+            lvars=l.listavar
+            datos = np.array([])
+            for x in range(lee):
+                datos=np.append(datos,list(map(float,reader.readline().split())))
+            npdatos = datos.reshape((2,)*len(l.listavar))
+            l.tabla = npdatos
+    elif 'or_chain' in Archivo:
+        for l in lista:
+            datosb = reader.readline().split()
+
+            while not datosb:
+                datosb = reader.readline().split()
+               
+            del datosb[0]
+            datos = np.array(list(map(float,datosb)))
+
+            npdatos = datos.reshape((2,)*len(l.listavar))
+            l.tabla = npdatos
+    elif 'Promedus' in Archivo:
         reader.readline()
-        lee=int(int(reader.readline())/2)
-        lvars=l.listavar
-        datos = np.array([])
-        for x in range(lee):
-            datos=np.append(datos,list(map(float,reader.readline().split())))
-        l.tabla=(datos!=0.).reshape((2,)*len(l.listavar))
-        npdatos = datos.reshape((2,)*len(l.listavar))
-        
-        l.tabla = npdatos
+        for l in lista:
+            k = int(reader.readline())
+            datosb = reader.readline().split()
+            datos = np.array(list(map(float,datosb)))
+
+            npdatos = datos.reshape((2,)*len(l.listavar))
+            l.tabla = npdatos
+
+
       
     
     setevid = leeArchivoEvid(Archivo+".evid")

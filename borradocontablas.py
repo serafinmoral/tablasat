@@ -9,7 +9,8 @@ from SimpleClausulas import *
 from time import *
 from utils import *
 from xor import *
-from DeterministicDeletion import *
+from vartablasd import *
+# from DeterministicDeletion import *
 # from arboltablaglobal import *
 
 def test():
@@ -64,7 +65,10 @@ def triangulap(lista):
     total = set()
     dvar = dict()
     for p in lista:
-        con = set(p.listavar)
+        if isinstance(p,nodoTabla):
+            con = set(p.listavar)
+        else:
+            con = set(p)
         total.update(con)
         for v in con:
             if v in dvar:
@@ -170,105 +174,9 @@ def leeArchivoGlobal(Archivo):
 
     
 def main(prob, Previo=True, Mejora=False): #EDM
-        # info.contradict = False
-        # info.solved = False
-        
+    
 
-        test()
-
-        prob.inicial.solved = False         
-        print("entro en main")  #EDM
-
-        prob.inicia0() 
-
-        if Previo: #EDM
-            prob.previo()       
-        
-
-       
-
-
-        
-        (prob.orden,prob.clusters,prob.borr,prob.posvar,prob.child,prob.parent) = triangulap(prob.pinicial.listap) 
-
-        # prob.cuclusters()
-       
-        # (order,clusters,iorder,posvar,child,parent) = triangulap(back.getpotl(back.getvars()))
-           
-
-        # prob.rela.mejoralocal()           
-        # if Mejora:  #EDM
-        #     prob.rela.mejoralocal()      #EDM  
-            
-        prob.inicia1() 
-
-        back = prob.rela.copia()
-
-        (orden,prob.clusters,prob.borr,prob.posvar,prob.child,prob.parent) = triangulap(back.getpotl(back.getvars())) 
-
-
-        h = back.getXor()
-        back.orden = orden
-
-        xorp = xor(h)
-       
-        # print(xorp.compiled) 
-        # print(xorp.order)
-        ls = xorp.getTables()
-
-
-        back.minid(30)
-
-
-        for p in h:
-           
-            back.insertar(p)
-
-
-
-
-
-        back.orden = orden
-
-       
-        # back.orden = order
-       
-
-
-        # for i in [3,3,4,4,5,3,5,3,3,6,3,7,3,4,5]:
-        #     print("i = ",i)
-        #     back.minid(i)
-
-        # back.recomputeorder()
-        # orden = back.orden.copy()
-
-        # back = prob.rela.copia()
-
-        # back.orden = orden
-
-        for i in [3,3,4,4,5,3,5,3,3,6,3,7,3,4,5]:
-            print("i = ",i)
-            back.minid(i)
-
-
-
-        for i in [6,3,7,3,7,3,8,3,9,3,10,3,3,4,3,4,3,4,11,12,13,14,15,14,13,12,11,10,9,8,7,6,5,4,3]:
-            print("i = ",i)
-            back.minid(i)
-        
-
-
-
-
-       
-        # back.localimprove()
-
-        back.borraf(Q=5)
-
-
-        print("termino borraf")
-
-        nuevo = back.copia()
+        nuevo = prob.copia() 
 
         print("termino copia")
 
@@ -276,117 +184,34 @@ def main(prob, Previo=True, Mejora=False): #EDM
 
 
 
-        # listpot = nuevo.getpotl(nuevo.getvars())
-
-        # print(len(listpot))
-
-        
-        # listac = getclusters(listpot)
-
-        # print(len(listac))
 
         
 
         
-        
-        # sleep(4)
-
-        # npot = nuevo.getmarginalsapr(listac,Q=5)
-
-
-        # nuevo = varpot()
-        # for p in npot:
-        #     print(2**len(p.getvars()), p.tabla.sum() )
-        #     nuevo.insertarb2(p)
        
-
-        for i in range(10,25):
-            print("i=",i)
-            nuevo.borraf(Q=i)
-           
-
-        # listat = []
-        # (res,lista) = nuevo.borrae(Q=25)
-        # for p in lista:
-        #     print(len(p.getvars()),p.getvars())
-        #     sleep(1)
-        # listat = listat + lista
-        # while listat:
-        #     p = listat[0]
-        #     del listat[0]
-        #     print(len(p.getvars()),p.getvars())
-        #     res.insertar(p)
-        #     (res,lista) = res.borrae(Q=25)
-        #     for p in lista:
-        #         print(len(p.getvars()),p.getvars())
-        #     sleep(10)
-        #     listat = listat + lista
-
-
-        
-         
-
-
-            # listpot = nuevo.getpotl(nuevo.getvars())
-
-            # print(len(listpot))
-            # listac = getclusters(listpot)
-
-            # print(len(listac))
-            # npot = nuevo.getmarginalsapr(listac,Q=10)
-
-            # nuevo = varpot()
-            # for p in npot:
-            #     print(2**len(p.getvars()), p.tabla.sum() )
-            #     nuevo.insertarb2(p)
-
-            # sleep(20)
-
-
-
-        # for i in [3,3,4,4,5,5,3,3,6,7,8,9,10]:
-        #     print("i = ",i)
-        #     nuevo.minid(i)
-
-        # back.simplifyp(nuevo)
-
-        # nuevo.checkincluded()
-      
         t1 = time()
 
-        
+       
+           
+
+   
 
 
-        nuevo.borrac(Q=25)
+        (res,msize) = nuevo.borraf(32)
+        res.prob = prob.prob.copy()
+        res.addproborden()
+     
+
+        sleep(5)
 
         t2 = time()
 
         print(t2-t1)
 
-        wait = input("Press Enter to continue.")
 
 
-        # config = nuevo.back2(30)
-        # vars = set(prob.rela.getvars())
-        # print(len(vars))
-        # vars2 = set(map(abs,config))
-        # back.compruebasol(config)
-        # print("diferencia" , vars-vars2)
-        # print(config)
         
 
-
-    
-
-        # print("salgo de borrado")
-
-        # if not prob.contradict:
-        #     prob.sol = prob.findsol()
-        #     prob.compruebaSol()
-        #     return True
-        # else:
-        #     print(" problema contradictorio ")
-        #     return False
 
 def treeWidth(prob):
     (orden,clusters,borr,posvar,child,parent) = triangulap(prob.pinicial)
@@ -430,50 +255,8 @@ def computetreewidhts(archivolee):
     reader.close()
 
 
-def borradofacil(archivolee, Q=[5,10,15,20,25,30],Mejora=[False], Previo=[True], Partir=[True], archivogenera="salida.csv"):
-    try:
-        reader=open(archivolee,"r")
-        writer=open(archivogenera,"w")
-        writer.write("Problema;Variable;Claúsulas;Q;MejoraLocal;Previo;PartirVars;TLectura;TBúsqueda;TTotal;SAT\n")
-        ttotal = 0
-        # i=0
-        for linea in reader:
-            # i=i+1
-            linea = linea.rstrip()
-            if len(linea)>0:
-                cadena = ""
-                # param = linea.split()
-                # nombre = param[0]
-                # N1 = int(param[1])
-                nombre=linea.strip()
-                print(nombre)     
-                t1 = time()
-                (info, nvar, nclaus) = leeArchivoGlobal(nombre)
-                t2= time()
-                for Qev in Q:
-                    for Mej in Mejora:
-                        for Pre in Previo:
-                            for Part in Partir:
-                                    t3 = time()
-                                      
-                                    prob = problemaTrianFactor(info,Qin=Qev) #EDM   #Último parámetro es Q
-                                    # prob = problemaTrianFactor(info,N1,Qev) #EDM   #Último parámetro es Q
-                                    t4 = time()
-                                    # main(prob)  #EDM 
-                                    nv = main2(prob, Pre,Mej) #EDM 
-                                    t5 = time()
-                                    print("tiempo lectura ",t2-t1)
-                                    print("tiempo busqueda ",t5-t4)
-                                    print("tiempo TOTAL ",t5-t3+t2-t1)
-                                    cadena =   str(nv) +"\n"
-                            writer.write(cadena)
-        writer.close()
-        reader.close()    
-    except ValueError:
-        print("Error")
 
 def borradocontablas(archivolee, Q=[5,10,15,20,25,30],Mejora=[False], Previo=[True], Partir=[True], archivogenera="salida.csv"):
-        # reader=open("D:/satsolver/"+archivolee,"r")
         reader=open(archivolee,"r")
         writer=open(archivogenera,"w")
         writer.write("Problema;Variable;Claúsulas;Q;MejoraLocal;Previo;PartirVars;TLectura;TBúsqueda;TTotal;SAT\n")
@@ -484,21 +267,26 @@ def borradocontablas(archivolee, Q=[5,10,15,20,25,30],Mejora=[False], Previo=[Tr
             linea = linea.rstrip()
             if len(linea)>0:
                 cadena = ""
-                # param = linea.split()
-                # nombre = param[0]
-                # N1 = int(param[1])
+              
                 nombre=linea.strip()
                 print(nombre)     
                 t1 = time()
-                (info, nvar, nclaus) = leeArchivoGlobal(nombre)
+                (tablas,evi) = leeficheroUAI(nombre)
                 t2= time()
                 for Qev in Q:
                     for Mej in Mejora:
                         for Pre in Previo:
                             for Part in Partir:
                                     t3 = time()
-                                    cadena= nombre + ";" + str(nvar) + ";" + str(nclaus) + ";" + str(Qev) + ";" + str(Mej) + ";" + str(Pre) + ";" + str(Part) + ";"
-                                    prob = problemaTrianFactor(info,Qin=Qev) #EDM   #Último parámetro es Q
+                                    cadena= nombre + ";" +  str(Qev) + ";" + str(Mej) + ";" + str(Pre) + ";" + str(Part) + ";"
+                                    prob = varpot()
+                                    lclu = [p.getvars() for p in tablas] + [[abs(v)] for v in evi]
+                                    (orden,prob.clusters,prob.borr,prob.posvar,prob.child,prob.parent) = triangulap(lclu)
+                                    print(max([len(x) for x in prob.clusters]))
+                                    # sleep(5)
+
+                                    prob.orden = orden
+                                    prob.computefromBayes(tablas,evi)
                                     # prob = problemaTrianFactor(info,N1,Qev) #EDM   #Último parámetro es Q
                                     t4 = time()
                                     # main(prob)  #EDM 

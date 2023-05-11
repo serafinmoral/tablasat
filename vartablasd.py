@@ -8,7 +8,7 @@ from secrets import choice
 from statistics import variance
 from utils import *
 from time import *
-from random import shuffle
+from random import shuffle,choices
 from arboltabla import *
 
 def update(value,dvar,dvard,total):
@@ -71,6 +71,27 @@ def updateclus(x,dvar,dvard):
 
     return res
 
+def groupp(l,Q=30):
+    if not l:
+        return
+    ln = l.copy()
+    t = min(ln,key = lambda x: len(x.getvars()))   
+    l.remove(t) 
+    ln.remove(t)
+    while ln:
+        h = min(ln,key = lambda x: len(set(x.getvars()).union(set(t.getvars()))))
+        if len(set(h.getvars()).union(set(t.getvars()))) <= Q:
+            t = t.combina(h)
+            ln.remove(h)
+            l.remove(h)
+        else:
+            l.append(t)
+            t = min(ln,key = lambda x: len(t.getvars()))   
+            ln.remove(t)
+            l.remove(t)
+    l.append(t)
+    
+
 
 def ordena(l,Q):
 
@@ -98,9 +119,12 @@ class varpot:
             self.tabla = dict()
             self.tablad = dict()
             self.contradict = False
+            self.tablam = dict()
             self.orden = []
             self.posvar = dict()
             self.clau = dict()
+            self.prob = dict()
+            
             
           
         def anula(self):
@@ -124,6 +148,29 @@ class varpot:
 
             return res
         
+
+        def computefromBayes(self,tables,evid):
+            tar = []
+            for p in tables:
+                q = p.reduce(evid)
+                tar.append(q)
+            for x in evid:
+                p = tableunit(x)
+                self.insertar(p)
+            for p in tar:
+                self.insertbay(p)
+                q = nodoTabla(p.listavar)
+                q.tabla = p.tabla > 0
+                if not q.trivial():
+                    self.insertar(q)
+
+        def insertbay(self,p):
+            for v in p.getvars():
+                if v in self.prob:
+                    self.prob[v].append(p)
+                else:
+                    self.prob[v] = [p]
+
 
         def getpot(self,Q=5):
             res = []
@@ -180,6 +227,8 @@ class varpot:
                 res.tabla[v] = self.tabla[v].copy()
             for v in self.tablad:
                 res.tablad[v] = self.tablad[v].copy()
+            for v in self.tablam:
+                res.tablam[v] = self.tablam[v].copy()
 
             for v in self.clau:
                 res.clau[v] = self.clau[u].copy()
@@ -227,7 +276,7 @@ class varpot:
                 var = self.orden[level]
                 list1 = []
                 list2 = []
-                lista = self.get(var) + self.getd(var)
+                lista = self.get(var) + self.getd(var) + self.getm(var)
                 margi = False
                 for p in lista:
                     t = p.reduce(config)
@@ -297,13 +346,18 @@ class varpot:
                 orden.append(abs(var))
 
                 if apren:
-                        nueva = apren
-                        self.insertar(nueva)
-                        level = self.level(nueva.getvars())
+                        sets= []
+                        for nueva in apren:
+                            print("aprendo ", nueva.getvars())
+                            sets = sets+self.insertback(nueva)
+                        if self.contradict:
+                            break
+                        for h in sets:
+                            level = max(level,self.level(h))
                         pos = pos + orden[-(level-oldl)-1:]
                         del orden[-(level-oldl)-1:]
                         del config[-(level-oldl):]
-                        print("aprendo ", nueva.getvars())
+                        
                 else:
                     config.append(var)
                     level+=-1
@@ -380,14 +434,6 @@ class varpot:
             svar = set(p.getvars())
 
             n = len(svar)
-            
-            # for v in p.getvars():
-            #     if v in self.tablad:
-            #         for q in self.tablad[v]:
-            #             if set(q.getvars())<= svar:
-            #                 h = q.combina(p,inplace=False)
-            #                 h.borra([v], inplace=True)
-            #                 return self.simplifica(h)
                             
 
             lista = []
@@ -419,6 +465,47 @@ class varpot:
                     res = res.combina(q)
                     
             return res
+
+        def simplify(self,p):
+            if self.contradict:
+                return
+            if p.contradict():
+                self.anula()
+                return []
+            
+
+            if p.trivial():
+                return []
+            
+            lp = p.getvars()
+            n = len(lp)
+
+            svar = set(lp)
+            lista = []
+            for v in lp:
+                if v in self.tabla: 
+                    for q in self.tabla[v]:
+                        lq = q.getvars()
+                        if len(lq)>=n and q not in lista:
+                            lista.append(q)
+                if v in self.tablad: 
+                    for q in self.tablad[v]:
+                        lq = q.getvars()
+                        if len(lq)>=n and q not in lista:
+                            lista.append(q)
+                        
+
+            for q in lista:
+                sq = set(q.getvars())
+                if  svar<= sq:
+                    # print("intento combinar")
+                    nq = q.combina(p)
+                    # print(nq.tabla.sum(),q.tabla.sum())
+                    if not nq.implicadopor(q):
+                        if self.belong(q):
+                            self.eliminar(q)
+                        print("mejoro existen",nq.tabla.sum(),q.tabla.sum(), 2**(len(nq.getvars())))
+                        self.insertar(nq)
 
         def simplificat(self,p):
             if p.trivial():
@@ -527,200 +614,15 @@ class varpot:
 
 
 
-                        
-        def insertarb2(self,p, Q = 25):
-            if p.contradict():
-                self.anula()
-                return []
-            
-
-            if p.trivial():
-                return []
-            
-            lp = p.getvars()
-            n = len(lp)
-
-            svar = set(lp)
-            # insert = False
-            # res = []
-            for v in lp:
-                if v in self.tablad:
-                    for q in self.tablad[v]:
-                        lq = q.getvars()
-                        if len(lq) <= n and set(lq)<= svar:
-                            h = q.combina(p)
-                            h = h.borra([v])
-                            return self.insertarb2(h)
-                        elif svar< set(lq):
-                            nq = q.combina(p)
-                            if not nq.implicadopor(q):
-                                self.eliminar(q)
-                                return self.insertarb2(nq)
-                            return []
-
-            # if insert:
-            #     return res
-            lista = []
-            lista2 = []
-            for v in lp:
-                if v in self.tabla: 
-                    for q in self.tabla[v]:
-                        lq = q.getvars()
-                        if len(lq)<=n and q not in lista:
-                            lista.append(q)
-                        elif len(lq)> n and q not in lista2:
-                            lista2.append(q)
-
-
-            for q in lista:
-                sq = set(q.getvars())
-                if  sq<=svar:
-                    p = p.combina(q)
-                    self.eliminar(q)
-
-        
-
-
-            if len(lp)<=Q:
-
-                for v in lp:
-                    if p.checkdetermi(v):
-                        var = v
-                        t = p.minimizadep(v, seg = set())
-                        # print("nuevo determinismo ", len(p.getvars()), len(t.getvars()))
-                        if len(t.getvars())< len(lp):
-                            l1 = self.insertarb2(t)
-                            q = p.borra([var])
-                            l2 = self.insertarb2(q)
-                            return l1 + l2
-                        else:
-                            
-                            res = [lp]
-                            lista = []
-                            for v in lp:
-                                if v in self.tablad:
-                                    for q in self.tablad[v]:
-                                        lq = q.getvars()
-                                        if len(lq) >n and q not in lista:
-                                            lista.append(q)
-                                if v in self.tabla: 
-                                    for q in self.tabla[v]:
-
-                                        if len(q.getvars()) >n and q not in lista:
-                                            lista.append(q)
-                            ins = []
-                            for q in lista:
-                                    sq = set(q.getvars())
-                                    if svar <= sq:
-                                        
-                                        self.eliminar(q)
-                                        h = q.combina(p)
-                                        h = h.borra([var])
-                                        ins.append(h)
-
-                            for h in ins:
-                                res = res + self.insertarb2(h)
-
-
-                            if var in self.tablad:
-                                    self.tablad[var].append(p)
-                            else:
-                                    self.tablad[var] = [p]
-
-                            for v in lp:
-                                    if not v == var:
-                                        if v in self.tabla:
-                                            self.tabla[v].append(p)
-                                        else:
-                                            self.tabla[v] = [p]
-                        return res
-            
-            # ins = False
-            # res = []
-            for q in lista2:
-                sq = set(q.getvars())
-                if  svar<=sq and self.belong(q):
-                    ins = True
-                    nq = q.combina(p)
-                    if not nq.implicadopor(q):
-                        self.eliminar(q)
-                        return self.insertarb2(nq)
-                    return []
-            # if ins:
-            #             return res
-            n = len(self.getvars())
-            if len(svar) <= 10 and n>30:
-                for v in svar:
-                    res = p.descomponev(v)
-                    if len(res) == 2:
-                        # print("descompongo ", len(svar),len(res[0].getvars()))
-                        return self.insertarb2(res[0]) + self.insertarb2(res[1])
-
-
-            res= [p.getvars()]
-            for v in lp:
-                if v in self.tabla:
-                    self.tabla[v].append(p)
-                else:
-                    self.tabla[v] = [p] 
-
-            return res
-        
-
-        
-
-        def simplify(self,p):
-            if self.contradict:
-                return
-            if p.contradict():
-                self.anula()
-                return []
-            
-
-            if p.trivial():
-                return []
-            
-            lp = p.getvars()
-            n = len(lp)
-
-            svar = set(lp)
-            lista = []
-            for v in lp:
-                if v in self.tabla: 
-                    for q in self.tabla[v]:
-                        lq = q.getvars()
-                        if len(lq)>=n and q not in lista:
-                            lista.append(q)
-                if v in self.tablad: 
-                    for q in self.tablad[v]:
-                        lq = q.getvars()
-                        if len(lq)>=n and q not in lista:
-                            lista.append(q)
-                        
-
-            for q in lista:
-                sq = set(q.getvars())
-                if  svar<= sq:
-                    # print("intento combinar")
-                    nq = q.combina(p)
-                    # print(nq.tabla.sum(),q.tabla.sum())
-                    if not nq.implicadopor(q):
-                        if self.belong(q):
-                            self.eliminar(q)
-                        print("mejoro existen",nq.tabla.sum(),q.tabla.sum(), 2**(len(nq.getvars())))
-                        self.insertar(nq)
-            
         def getXor(self):
             lista = self.getpotd()
             res = []
             for p in lista:
                 h = p.checkxor()
                 if h:
-                    print(h)
-                    res.append(p)
-                if p.tabla.sum()==2**(len(p.getvars())-1):
-                    print("total elimino")
-                    self.eliminar(p)
+                    res.append(h)
+                    # if p.tabla.sum()==2**(len(p.getvars())-1):
+                    #     self.eliminar(p)
 
             return res
 
@@ -1006,7 +908,7 @@ class varpot:
             
             self.orden = orden                             
                       
-        def sim(self,p,K=1):
+        def sim(self,p,K=0):
             svar = set(p.getvars())
             orvar = sorted(p.getvars(),key = lambda x: self.orden.index(x))
             n = len(svar)
@@ -1018,7 +920,7 @@ class varpot:
                             p = p.borra([v])
                             p = self.checkequal(p)
                             if not p:
-                                return p
+                                return []
                             return self.sim(p)
                             
             if K>0:
@@ -1063,7 +965,45 @@ class varpot:
             
             return svar
 
-                
+        def insertmix(self,p, Q=25):
+            
+            
+            svar = set(p.getvars())
+            orvar = sorted(p.getvars(),key = lambda x: self.orden.index(x))
+            n = len(svar)
+            for v in orvar:
+                if v in self.tablad:
+                    for q in self.tablad[v]:
+                        if len(q.getvars())<n and  set(q.getvars()) <= svar:
+                            p = p.simplifyd(q,v)
+                            
+            svar = set(p.getvars())
+            n = len(svar)
+            if n<=Q:
+                h = p.toTable()
+                return self.insertar(h)
+            
+            for v in svar:
+                if v in self.tablam:
+                            self.tablam[v].append(p)
+                else:
+                            self.tablam[v] = [p]
+
+            return []
+
+
+        def insertars(self,p):
+            
+               
+        
+
+            for v in p.getvars():
+                if v in self.tabla:
+                            self.tabla[v].append(p)
+                else:
+                            self.tabla[v] = [p]
+
+
                 
 
         def insertar(self,p, s=True):
@@ -1085,6 +1025,9 @@ class varpot:
 
             if p.trivial():
                 return []
+            
+            if isinstance(p,mix):
+                return self.insertmix(p)
             op = p
             p = self.checkequal(p)
             if not p:
@@ -1119,7 +1062,6 @@ class varpot:
                 
                 if p.checkdetermi(v):
                     t = p.minimizadep(v, seg = set())
-                    # print("nuevo determinismo ", len(p.getvars()), len(t.getvars()))
                     if len(t.getvars())< len(p.getvars()):
                         l1 = self.insertar(t)
                         q = p.borra([v],inplace = False)
@@ -1160,7 +1102,6 @@ class varpot:
                         # print("añado ", vard, r.getvars())
                         self.eliminar(q)
                         ins.append(r)
-
                         test = False
                     else:
                         incl= True
@@ -1179,6 +1120,17 @@ class varpot:
             if dets:
                 
                 nd.append(p)
+                lista = []
+                for v in p.getvars():
+                    if v in self.tablam:
+                        for q in self.tablam[v]:
+                            if len(q.getvars())>= n and q not in lista:
+                                lista.append(q)
+                for q in lista:
+                    self.eliminar(q)
+                    h= q.simplifyd(p, min(dets,key = lambda x: self.orden.index(x) ))
+                    self.insertar(h)
+
 
 
                 for v in p.getvars():
@@ -1203,104 +1155,169 @@ class varpot:
 
             
             
-            # print("salgo insertar", p.listavar)
        
             return nd
 
 
+                
 
-        def insertard(self,p):
-            # print("inserto ", p.getvars())
-           
-            if p.contradict():
-                self.anula()
+        def insertback(self,p):
+
+            # print("entro insertar", p.listavar)
+     
+            if self.contradict:
                 return []
+            
+           
+
+            svar = set(p.getvars())
+            
+            n = len(svar)
+
+
+            
             
 
             if p.trivial():
                 return []
-
+            
+            if isinstance(p,mix):
+                return self.insertmix(p)
+            op = p
+            p = self.checkequal(p)
+            if not p:
+                return []
+            if op==p:
+                p = self.simplifica(p)
+            p = self.sim(p)
+            if not p:
+                return []
+               
             svar = set(p.getvars())
+
+
+            n = len(svar)
+
+
+
+
+            
+            if p.contradict():
+                self.anula()
+                return []
+
             
             
             
+                 
+
+            
+            dets = []
             for v in p.getvars():
-                if v in self.tablad:
-                    for q in self.tablad[v]:
-                        if set(q.getvars())<= svar:
-                            h = q.combina(p,inplace=False)
-                            h.borra([v], inplace=True)
-                            return self.insertard(h)
-                                 
-            det = False
-            for v in p.getvars():
+                
                 if p.checkdetermi(v):
                     t = p.minimizadep(v, seg = set())
                     # print("nuevo determinismo ", len(p.getvars()), len(t.getvars()))
                     if len(t.getvars())< len(p.getvars()):
-                        l1 = self.insertard(t)
+                        l1 = self.insertback(t)
                         q = p.borra([v],inplace = False)
-                        l2 = self.insertard(q)
-                        return l1+l2                        
+                        l2 = self.insertback(q)
+                        return l1 + l2
+                        
                 
-                    det = True
-                    var = v
-
-                    break
-
-            if det:
+                    dets.append(v)
     
-                lista = []
 
-                tec = []
-                for v in p.getvars():
-                    if v in self.tablad:
-                        for q in self.tablad[v]:
-                            if q not in lista:
-                                lista.append(q)
-                    if v in self.tabla:
-                        for q in self.tabla[v]:
-                            if q not in lista:
-                                lista.append(q)
-                ins = []
-                for q in lista:
-                    if svar <= set(q.getvars()):
+            
+
+
+            
+
+            lista = []
+
+
+            for v in p.getvars():
+                if v in self.tablad:
+                    for q in self.tablad[v]:
+                        if len(q.getvars())>= n and q not in lista:
+                            lista.append(q)
+                if v in self.tabla:
+                    for q in self.tabla[v]:
+                        if  len(q.getvars())>= n and q not in lista:
+                            lista.append(q)
+            incl = False
+            ins = []
+            nd = [p.getvars()]
+            for q in lista:
+                if svar <= set(q.getvars()):
+                    r = q.combina(p)
+                    if dets:
+                        # print("obrrao ",vard, q.getvars())
+                        var = min(dets,key = lambda x: self.orden.index(x) )
+                        r.borra([var],inplace = True)
+                        # print("añado ", vard, r.getvars())
                         self.eliminar(q)
-                        h = p.combina(q, inplace = False)
-                        h.borra([var], inplace = True)
-                        ins.append(h)
+                        ins.append(r)
+                        test = False
+                    else:
+                        incl= True
+                        test = True
+                    if test:
+                        if not r.implicadopor(q):
+                            self.eliminar(q)
+                            ins.append(r)
+                        elif len(q.getvars())==len(p.getvars()):
+                            print("Caso imposible")
+                            return []
+            for q in ins:
+                nd = nd + self.insertar(q)
+             
+                        
+            if dets:
                 
-                for h in ins:
+                lista = []
+                for v in p.getvars():
+                    if v in self.tablam:
+                        for q in self.tablam[v]:
+                            if len(q.getvars())>= n and q not in lista:
+                                lista.append(q)
+                for q in lista:
+                    self.eliminar(q)
+                    h= q.simplifyd(p, min(dets,key = lambda x: self.orden.index(x) ))
                     self.insertar(h)
 
-                for v in svar-{var}:
-                    if v in self.tabla:
+
+
+                for v in p.getvars():
+                    if not v in dets:
+                        if v in self.tabla:
                             self.tabla[v].append(p)
-                    else:
+                        else:
                             self.tabla[v] = [p]
-
-                if var in self.tablad:
-                    self.tablad[var].append(p)
-                else:
-                    self.tablad[var] = [p]
-                
-                tec.append(p)
-                
-                return tec
-
+                    else:
+                        if v in self.tablad:
+                            self.tablad[v].append(p)
+                        else:
+                            self.tablad[v] = [p]
             else:
+                
+
                 for v in svar:
                     if v in self.tabla:
                             self.tabla[v].append(p)
                     else:
                             self.tabla[v] = [p]
 
+            
+            
+            # print("salgo insertar", p.listavar)
+       
+            return nd
 
-                    
-            return []
 
 
 
+ 
         def eliminarc(self,cl):
             lvar = map(abs,cl)
             for v in lvar:
@@ -1312,6 +1329,10 @@ class varpot:
 
 
         def eliminar(self,p):
+            if isinstance(p,mix):
+                for v in p.getvars():
+                    self.tablam[v].remove(p)
+                return
             for v in p.getvars():
                 if v in self.tabla and p in self.tabla[v]:
                     self.tabla[v].remove(p)
@@ -2097,7 +2118,7 @@ class varpot:
                     sset.update(set(q.getvars()))
                     mat += - 2**(len(q.getvars()))
 
-            return (mat + 2**(len(sset)-1))
+            return (mat + 2**(len(sset)-2))
 
                     
                         
@@ -2167,14 +2188,23 @@ class varpot:
  
         def siguientep(self,pos):
 
-            posc= pos.copy()
+            posc= pos
 
+            det = []
             for x in pos:
                 x1 = len(self.tabla.get(x)) if self.tabla.get(x) else 0
                 x2 = len(self.tablad.get(x)) if self.tablad.get(x) else 0
                 if x1+x2 <= 1:
                     return x
+                # if x2>0:
+                #     det.append(x)
+                
+            # if det:
+            
+                
+            #     return min(det, key = lambda x: self.tadm(x))
 
+            # else:
 
             miv = min(posc,key = lambda x: self.tadm(x))
             return miv
@@ -2210,6 +2240,12 @@ class varpot:
                 return self.tablad.get(i,[]).copy()
             else:
                 return self.tablad.get(i,[])
+            
+        def getm(self,i, deep=True):
+            if deep:
+                return self.tablam.get(i,[]).copy()
+            else:
+                return self.tablam.get(i,[])
 
 
         def mini(self,vorig,small, Q, trabajo, gorden=[], verb=True, M=3, H=40):
@@ -2685,13 +2721,18 @@ class varpot:
                            
                 if ins:
                     for p in nd:
-                        self.insertar(p)
+                        if len(p.getvars())<=15:
+                            print("nuevo determinismo" , p.getvars())
+                            self.insertar(p)
                 
                 if nue:
                     i=1
                     for p in nuevas:
                         # print("intento ", p.getvars())
-                        self.simplify(p)
+                        if len(p.getvars()) <= 5:
+                            self.insertar(p)
+                        else:
+                            self.simplify(p)
 
                         # print("salgo")
                         if self.contradict:
@@ -2699,133 +2740,7 @@ class varpot:
                             return 
 
 
-            # trabajo = self.copia()
-
-
-            # torden = orden.copy()
-            # print("en orden inverso")
-
-            # while torden and not self.contradict: 
-            #     var = torden.pop()
-                
-
-
-            #     list1 = trabajo.get(var)
-            #     list2 = trabajo.getd(var)
-
-
-            #     for p in list1:
-            #         trabajo.eliminar(p)
-            #     for p in list2:
-            #         trabajo.eliminar(p)
-
-
-
-            #     n = len(list1) + len(list2)
-            #     nd = []
-            #     traba = []
-            #     nuevas = []
-                
-                       
-
-            #     vorig.discard(var)
-
-
-            #     if list2:
-                   
-            #         pivote = min(list2, key = lambda x: len(x.getvars()))
-            #         if n<=1:
-            #             h = pivote.borra([var], inplace = False)
-            #             nd = nd + trabajo.insertard(h)
-            #             nuevas.append(h)
-                      
-                          
-                
-            #         else:
-            #             for p in list1:
-                            
-
-            #                 pivote = min(list2, key=lambda x: len(set(p.getvars()).union(set(x.getvars()))))
-            #                 if len(set(p.getvars()).union(set(pivote.getvars())))<= Q:
-            #                     h = pivote.combina(p, inplace = False)
-            #                     h.borra([var], inplace =True)
-            #                     nd = nd + trabajo.insertar(h)
-            #                     nuevas.append(h)
-                               
-                                    
-
-
-
-            #                 else:
-            #                     traba.append(p)
-            #             list2.sort(key = lambda x :  len(x.getvars()) )
-
-            #             while len(list2) > 1:
-            #                 p = list2.pop()
-            #                 pivote =  min(list2, key=lambda x: len(set(p.getvars()).union(set(x.getvars()))))
-            #                 if len(set(p.getvars()).union(set(pivote.getvars())))<= Q:
-            #                     h = pivote.combina(p, inplace = False)
-            #                     h.borra([var], inplace =True)
-            #                     nd = nd+  trabajo.insertar(h)
-            #                     nuevas.append(h)
-                              
-
-            #                 else:
-            #                     traba.append(p)
-                        
-                        
-                        
-            #             if traba:
-                
-
-            #                 for p in traba:
-                                
-            #                     h = p.borra([var], inplace=False)
-                               
-            #                     nd = nd+  trabajo.insertard(h)
-            #                     nuevas.append(h)
-                            
-
-                    
-
-                    
-
-
-            #     else:
-                    
-            #         h = nodoTabla([])
-            #         combinaincluidas(list1,K=1)
-            #         if list1:
-            #             for q in list1:
-                        
-            #                 if len(set(h.getvars()).union(set(q.getvars())))<= Q or not h.getvars():
-            #                     h.combina(q,inplace=True)
-            #                 else:
-            #                     h.borra([var],inplace=True)
-
-            #                     nd = nd+  trabajo.insertard(h)
-            #                     nuevas.append(h)
-            #                     h = nodoTabla([])
-            #                     h.combina(q,inplace=True)
-
-            #             h.borra([var], inplace=True)
-            #             nd = nd+  trabajo.insertar(h)
-            #             nuevas.append(h)
-                        
-                           
-            
-                
-            #     if nue:
-            #         for p in nuevas:
-            #             self.simplify(p)
-
-
-            #     self.orden = orden
-            #     self.posvar = posvar
-
-            #     # for p in nuevas:
-            #     #     self.insertar(p)
-                   
+           
 
                 
             return 
@@ -3031,21 +2946,21 @@ class varpot:
             
 
 
-
-
-
-        def borraf(self,Q):
+        def compile(self,Q):
             
             vorig  = self.getvars()
             trabajo = self
             res = varpot()
-            res.orden = self.orden.copy()
+            res.orden =self.orden.copy()
+            this = []
             
             while vorig and not trabajo.contradict: 
                 var = trabajo.siguientep(vorig)
                 # var = trabajo.orden[0]
                 i = self.orden.index(var)
                 print("var ", var, i, len(vorig),  trabajo.tad(var))
+                this.append(var)
+
                 
 
 
@@ -3054,45 +2969,24 @@ class varpot:
 
                 print(len(list1),len(list2))
 
+                for p in list1:
+                            trabajo.eliminar(p)
+                for p in list2:
+                            trabajo.eliminar(p)  
                 
-                if trabajo.tad(var)>Q:
-                    break
-                    # for p in list1:
-                    #     trabajo.eliminar(p)
                     
-
-                    # for q in list1:
-                        
-            
-                    #             l = q.descomponev(var)
-                    #             trabajo.insertar(l[0])
-                    #             if len(l)>1:
-                    #                 trabajo.insertar(l[1])
-                       
-                    
-                    # if trabajo.tad(var)>Q:
-                    #     return res
-                    # else:
-                    #     print ("Recupero ", trabajo.tad(var))
-                    #     list1 = trabajo.get(var)
-                    #     list2 = trabajo.getd(var)
-
-                      
+                
 
                                
                             
 
 
 
-                for p in list1:
-                            trabajo.eliminar(p)
-                for p in list2:
-                            trabajo.eliminar(p)            
+                         
 
-                res.orden.append(var)
                 vorig.discard(var)
                 del self.orden[i]
-                
+
                
 
 
@@ -3119,7 +3013,7 @@ class varpot:
                     l = p.descomponev(var)
                     if len(l)>1:
                         print(len(p.getvars()),len(l[0].getvars()), len(l[1].getvars()))
-                        self.insertar(l[1])
+                        trabajo.insertar(l[1])
                         list1.remove(p)
                         if not l[0].trivial():
                             list1.append(l[0])
@@ -3129,7 +3023,8 @@ class varpot:
                 if list2:
                     print("determinista")
                     pivote = min(list2, key = lambda x: len(x.getvars()))
-                    res.insertar(pivote)
+                    svar = set(pivote.getvars())
+                    res.insertars(pivote)
                     if n<=1:
                         h = pivote.borra([var], inplace = False)
                         trabajo.insertar(h)
@@ -3140,14 +3035,223 @@ class varpot:
                     else:
                         for p in list1:
                                 
+                                if len(svar.union(set(p.getvars())))<=Q:
+                                    h = pivote.combina(p)
+                                    h = h.borra([var])
+                                    # print("inserto " ,h.getvars())
+                                    trabajo.insertar(h)
+                                # print("salgo de insertar")
+                                else:
+                                    h = p.borra([var])
+                                    trabajo.insertar(h)
+                                    res.insertar(p)
+                                    print("no exacto")
+
+
+                                
+                                if trabajo.contradict:
+                                    break
+                                
+                                
+                                        
+
+
+                        list2.remove(pivote)
+
+                        for p in list2:
+                                
+                                if len(svar.union(set(p.getvars())))<=Q:
+                                    h = pivote.combina(p)
+                                    h = h.borra([var])
+                                    # print("inserto " ,h.getvars())
+                                    trabajo.insertar(h)
+                                # print("salgo de insertar")
+                                else:
+                                    h = p.borra([var])
+                                    trabajo.insertar(h)
+                                    res.insertar(p)
+                                    print("no exacto")
+
+                                if trabajo.contradict:
+                                    break
+                                    
+                                
+                        
+                                
+
+                                
+
+                elif list1:
+                    h = nodoTabla([])        
+
+                    for r in list1:
+                        if not h.getvars() or len(set(h.getvars()).union(set(r.getvars())))<=Q:
+                            h = h.combina(r)
+                        else:
+                            print("no exacto")
+                            res.insertar(h)
+                            h = h.borra([var])
+                            trabajo.insertar(h)
+                            if trabajo.contradict:
+                                    break
+                            h = r.copia()
+                            
+
+                    res.insertar(h)
+                    h = h.borra([var])
+                    # print("inserto " ,h.getvars())
+                    trabajo.insertar(h)
+                    # print("salgo de insertar")
+                    if trabajo.contradict:
+                                    break
+                    
+
+
+
+
+            if self.contradict:
+                print("contradict")
+                res.anula()
+            
+            res.orden = this
+            self.orden = res.orden
+            self.tabla = res.tabla
+            self.tablad = res.tablad
+            self.contradict = res.contradict
+
+
+
+
+        def borraf(self,Q, xor = None):
+            
+            vorig  = self.getvars()
+            trabajo = self
+            res = varpot()
+            res.orden = self.orden.copy()
+            msize = 0
+
+            torden = []
+            
+            while vorig and not trabajo.contradict: 
+                var = trabajo.siguientep(vorig)
+            
+                # var = trabajo.orden[0]
+                i = self.orden.index(var)
+                print("var ", var, i, len(vorig),  trabajo.tad(var))
+                
+
+                # if trabajo.tad(var)>=Q:
+                #     return 
+
+                list1 = trabajo.get(var)
+                list2 = trabajo.getd(var)
+                list3 = trabajo.getm(var)
+
+                print(len(list1),len(list2),len(list3))
+
+                for p in list1:
+                            trabajo.eliminar(p)
+                for p in list2:
+                            trabajo.eliminar(p)   
+                for p in list3:
+                            trabajo.eliminar(p)           
+             
+                torden.append(var)
+                vorig.discard(var)
+                del self.orden[i]
+                
+               
+
+
+                n = len(list1) + len(list2) + len(list3)
+
+             
+                
+                list1.sort(key = lambda x :  len(x.getvars()) )
+
+                       
+
+
+                if n>1:
+                    nl = list1.copy()
+                    list1 = []
+                        
+                    for p in nl:
+                
+                        l = p.descomponev(var)
+                        if len(l)>1:
+                            print(len(p.getvars()),len(l[0].getvars()), len(l[1].getvars()))
+                            self.insertar(l[1])
+                            if not l[0].trivial():
+                                list1.append(l[0])
+                        else:
+                            list1.append(p)
+                        # sleep(5)
+                if not list2 and len(list1)>1:
+                    # print(len(list1))
+                    s = nodoTabla([])
+                    for p in list1:
+                        s = s.combina(p)
+                    
+                    list1 = [s]
+                    
+                    # groupp(list1,Q=Q)
+                    # print(len(list1) , [len(x.getvars()) for x in list1])
+                    # sleep(5)
+
+
+                if list2:
+                    print("determinista")
+                    pivote = min(list2, key = lambda x: len(x.getvars()))
+                    res.insertars(pivote)
+                    if len(list1) + len(list2) + len(list3)<=1:
+                        h = pivote.borra([var], inplace = False)
+                        msize = max(msize,len(pivote.getvars()))
+                        trabajo.insertar(h)
+                        
+                        
+                            
+                    
+                    else:
+                        for p in list1:
+                                
 
                                 pivote = min(list2, key=lambda x: len(set(p.getvars()).union(set(x.getvars()))))
-                                h = pivote.combina(p)
-                                h = h.borra([var])
-                                # print("inserto " ,h.getvars())
-                                trabajo.insertar(h)
+                                if len(set(p.getvars()).union(set(pivote.getvars())))<=Q:
+                                    h = pivote.combina(p)
+                                    msize = max(msize,len(h.getvars()))
+
+                                    h = h.borra([var])
+                                    # print("inserto " ,h.getvars())
+                                    
+                                    trabajo.insertar(h)
+                                else:
+                                    h = pivote.resolution(p,var)
+                                    trabajo.insertar(h[0])
+                                    trabajo.insertar(h[1])
+
+                                    r = p.borra([var])
+                                    msize = max(msize,len(h[0].getvars()),len(h[1].getvars()),len(r.getvars()))
+
+                                    trabajo.insertar(r)
                                 # print("salgo de insertar")
                                 
+                                if trabajo.contradict:
+                                    break
+
+                        
+                        for p in list3:
+                                
+
+                                pivote = min(list2, key=lambda x: len(set(p.getvars()).union(set(x.getvars()))))
+                                h = pivote.resolution(p,var)
+                                trabajo.insertar(h[0])
+                                trabajo.insertar(h[1])
+                                r = p.borra([var])
+                                trabajo.insertar(r)
+                                msize = max(msize,len(h[0].getvars()),len(h[1].getvars()),len(r.getvars()))
+
+
                                 if trabajo.contradict:
                                     break
                                 
@@ -3160,29 +3264,51 @@ class varpot:
                         while len(list2) > 1:
                                 p = list2.pop()
                                 pivote =  min(list2, key=lambda x: len(set(p.getvars()).union(set(x.getvars()))))
-                                
-                                h = pivote.combina(p)
-                                h = h.borra([var])
-                                # print("inserto " ,h.getvars())
-                                trabajo.insertar(h)
+                                if len(set(p.getvars()).union(set(pivote.getvars())))<=Q:
+                                    h = pivote.combina(p)
+                                    msize = max(msize,len(h.getvars()))
+                                    h = h.borra([var])
+                                    # print("inserto " ,h.getvars())
+                                    
+                                    trabajo.insertar(h)
+                                else:
+                                    h = pivote.resolution(p,var)
+                                    trabajo.insertar(h[0])
+                                    trabajo.insertar(h[1])
+                                    r = p.borra([var])
+                                    trabajo.insertar(r)
+                                    msize = max(msize,len(h[0].getvars()),len(h[1].getvars()),len(r.getvars()))
+
                                 # print("salgo de insertar")
                                 if trabajo.contradict:
                                     break
+                        p = list2.pop()
+                        r = p.borra([var])
+                        trabajo.insertar(r)
                                 
 
                                 
 
-                elif list1:
-                    h = nodoTabla([])        
+                elif list1 or list3:
 
-                    while list1:
-                        r = list1.pop()
-                        h = h.combina(r)
-                    res.insertar(h)
-                    h = h.borra([var])
-                    # print("inserto " ,h.getvars())
-                    trabajo.insertar(h)
-                    # print("salgo de insertar")
+                    listt = list1 + list3
+                    k = len(listt)
+                    for i in range(k):
+                        r1 = listt[i]
+                        for j in range(i+1,k):
+                            r2 = listt[j]
+                            (res1,res2) = r2.resolution(r1,var)
+                            trabajo.insertar(res1)
+                            trabajo.insertar(res2)
+                            msize = max(msize,len(res1.getvars()),len(res2.getvars()))
+
+                    for p in listt:
+                        res.insertars(p)
+                        r = p.borra([var])
+                        msize = max(msize,len(p.getvars()))
+
+
+                        trabajo.insertar(r)
                     if trabajo.contradict:
                                     break
 
@@ -3191,12 +3317,237 @@ class varpot:
 
             if self.contradict:
                 print("contradict")
+
+            print("tamaño máximo", msize)
+            sleep(5)
             # else:
             #     orden = self.orden.copy()
             #     self.recomputeorderb(var)
             #     self.minid(Q-1,ins=False)
             #     self.orden = orden
-            return (res,trabajo)
+
+            res.orden = torden
+            return (res,msize)
+        
+        def addproborden(self):
+            for v in self.prob:
+                if v not in self.orden:
+                    self.orden = [v] + self.orden
+
+        def importancesampling(self, N=500):
+            
+            borr = self.orden.copy()
+            
+
+            listlogic = []
+            listprob = []
+            sumw = dict()
+            for x in borr:
+                sumw[x] = 0.0
+                sumw[-x] = 0.0
+
+
+            for v in borr:
+                ll = self.get(v) + self.getd(v)
+       
+                listlogic.append(ll)
+                for p in ll:
+                    self.eliminar(p)
+                lp = self.prob.get(v,[]).copy()
+                listprob.append(lp)
+                for p in lp:
+                    for x in p.getvars():
+                        self.prob[x].remove(p)
+                    
+
+            borr.reverse()
+            listlogic.reverse()
+            listprob.reverse()
+
+            pesos = 0.0
+            pesos2 = 0.0
+            ceros = 0
+
+           
+
+            
+            for j in range(N):
+                sol = []
+                pe = 1.0
+                for i in range(len(borr)):
+                    
+                    var = borr[i]
+                    
+                   
+
+
+                    ll = listlogic[i]
+                    lp = listprob[i]
+                    pos = False
+                    neg = False
+                    for p in ll:
+                       
+                        h = p.reduce(sol)
+                   
+                        if not len(h.getvars()) == 1:
+                            print("algo va mal longitud de variables")
+                            sleep(5)
+                        if not h.tabla[0]:
+                            pos = True
+        
+                        if not h.tabla[1]:
+                            neg = True
+                    if pos and neg:
+                        print("peso 0")
+                        
+                        sleep(5)
+                        break
+
+                    pw = 1.0
+                    nw = 1.0
+                    for p in lp:
+                        h = p.reduce(sol)
+                        if not len(h.getvars()) == 1:
+                            print("algo va mal longitud de variables prob")
+                            print(h.getvars())
+                            print(p.getvars())
+                            print(var)
+                            print(446 in self.orden)
+                            print(446 in sol, -446 in sol)
+                            print(sol)
+                            sleep(5)
+                        nw *= h.tabla[0]
+                        pw *= h.tabla[1]
+
+                    if pos and not neg:
+                        sol.append(var)
+                        pe *= pw
+                        if pe == 0:
+                            print("peso 0 no coherente")
+                            sleep(50)
+
+                    if neg and not pos:
+                        sol.append(-var)
+                        pe *= nw
+                        if pe == 0:
+                            print("peso 0 no coherente")
+                            sleep(50)
+
+                    if not neg and not pos:
+                        value = choices([-var,var], weights = [nw,pw])
+                        if nw==0 or pw == 0:
+                            print("peso 0 no coherente")
+                            sleep(50)
+                        sol.append(value[0])
+
+                print(pe)
+                        
+
+
+                                  
+                    
+                    
+                if pe == 0:
+                    ceros+=1
+                else:
+                    pesos += pe
+                    pesos2 += pe*pe
+
+            me = pesos/N
+            va = pesos2/N - me*me
+
+
+
+            return(ceros,me, va/N )
+
+        def count(self,  Q=1.0E6):
+            
+        
+            borr = self.orden.copy()
+            
+            listlogic = []
+        
+
+            for v in borr:
+                ll = self.get(v) + self.getd(v)
+    
+                listlogic.append(ll)
+                for p in ll:
+                    self.eliminar(p)
+            
+                    
+
+            borr.reverse()
+            listlogic.reverse()
+            level = []
+            for v in borr:
+                level.append([0,1])
+          
+            
+            sols = [[]]
+           
+
+            for i in range(len(borr)):
+                print(i, len(sols))
+                if len(sols) > Q:
+                    break
+                
+
+                var = borr[i]
+                ins = []
+                for sol in sols:
+
+                    ll = listlogic[i]
+                    pos = False
+                    neg = False
+                    for p in ll:
+                        
+                        h = p.reduce(sol)
+                    
+                        if not len(h.getvars()) == 1:
+                            print("algo va mal longitud de variables")
+                            sleep(5)
+                        if not h.tabla[0]:
+                            pos = True
+
+                        if not h.tabla[1]:
+                            neg = True
+                        if pos and neg:
+                            print("peso 0")
+
+                            
+                            sleep(5)
+                            level[i] = []
+                            
+                            break
+
+                    
+                    if pos and not neg:
+                            sol.append(var)
+                        
+
+                    if neg and not pos:
+                        sol.append(-var)
+
+                    if not neg and not pos:
+                        sol1 = sol.copy()
+                        sol.append(var)
+                        sol1.append(-var)
+                        ins.append(sol1)
+                        
+                for s in ins:
+                    sols.append(s)
+
+                        
+
+            return sols
+                                  
+                    
+                    
+              
+
+
+
 
 
 
@@ -3783,37 +4134,47 @@ class varpot:
                 val[x] = 0.0
 
             for v in pos:
-                lista = self.get(v) + self.getd(v)
+                lista = self.get(v) + self.getd(v) + self.getm(v)
                 l1 = []
                 l2 = []
             
 
                 for p in lista:
                     dif = set(p.getvars()) - vars
+                    ldif = dif - {v}
                     h = p.reduce(config)
                     if h.contradict():
                             ap = p.borra(list(dif))
-                            print("contra ")
+                            print("contra 1")
                             sleep(1)
-                            return (v,ap)
-                    if len(h.listavar) == 1 and not h.trivial():
+                            return (v,[ap])
+                    if isinstance(h,nodoTabla):
+                        h = h.borra(list(set(h.getvars())-{v}))
+                    if len(h.getvars()) == 1 and not h.trivial():
+                        
+                        if isinstance(h,mix):
+                            h = h.toTable()
                         if h.tabla[0]:
-                            l1.append(p)
+                            ap = p.borra(list(ldif))
+                            print("forzado ", -v)
+                            l1.append(ap)
                             svar = -v
                         else:
-                            l2.append(p)
+                            ap = p.borra(list(ldif))
+                            l2.append(ap)
+                            print("forzado ", v)
                             svar = v
                         det = True
                     elif not det:
-                        val[v] += 1/h.tabla.sum()
+                        val[v] += 1/len(p.getvars())
                 if l1 and l2:
                     p1 = min(l1,key=lambda x: len(x.getvars()))
                     p2 = min(l2,key=lambda x: len(x.getvars()))
                     ap = p1.combina(p2)
                     ap = ap.borra([v])
-                    print("contra ")
+                    print("contra 2")
                     sleep(1)
-                    return (v,ap)
+                    return (v,[ap])
                 
             if det:    
                print("determinado")
@@ -3823,12 +4184,12 @@ class varpot:
             print("indeterminado ")
             sleep(0.5)
 
-            return (-max(pos, key = lambda x: val[x]),False)                   
+            return (max(pos, key = lambda x: val[x]),False)                   
 
                     
                    
                         
-                        
+                    
                
 
 

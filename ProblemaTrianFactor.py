@@ -12,7 +12,6 @@ from numpy import False_
 from vartablas import *
 
 from SimpleClausulas import *
-from arboltabla import calculadesdePotencial
 from tablaClausulas import *
 from arbolbooleano import *
 from utils import *
