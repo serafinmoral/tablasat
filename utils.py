@@ -844,7 +844,11 @@ def leeficheroUAI(Archivo):
 def leeArchivoEvid(Archivo):
     conjEvid=set()
     reader=open(Archivo,"r")
-    lunitario=list(map(int,reader.readline().split()))
+
+    lines = reader.readlines()
+    lunitario = []
+    for x in lines:
+        lunitario= lunitario + list(map(int,x.strip().split()))
     for x in range(1,len(lunitario),2):
         conjEvid.add((lunitario[x]+1)*(-1 if lunitario[x+1]==0 else 1))
     return conjEvid

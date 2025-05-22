@@ -1,0 +1,288 @@
+bayesian/mastermind_03_08_04-0001.uai
+[36, 28, 0, 24, 1, 0, 1, 7, 0, 26, 0, 15, 1, 2, 1, 4, 1, 22, 0, 23, 1, 35, 1, 18, 1, 21, 1, 33, 0, 20, 0, 31, 0, 12, 1, 16, 0, 13, 1, 1, 0, 6, 0, 25, 1, 34, 1, 19, 0, 14, 0, 8, 1, 11, 1, 29, 0, 10, 1, 30, 1, 27, 1, 17, 0, 32, 0, 3, 1, 9, 1, 5, 1]
+31
+{1, 3, 4, 5, 6, 9, 10, 11, 12, 13, 14, 16, 19, 22, 24, 25, 26, 28, 31, 35, 36, -34, -33, -32, -30, -29, -27, -23, -21, -20, -18, -17, -15, -8, -7, -2}
+0.3333333333333333
+0.22222222222222224
+0.07407407407407407
+0.024691358024691357
+0.008230452674897118
+0.002743484224965706
+0.0018289894833104707
+0.0012193263222069807
+0.00040644210740232686
+0.00013548070246744229
+4.516023415581409e-05
+1.5053411385271363e-05
+5.017803795090454e-06
+1.6726012650301511e-06
+1.115067510020101e-06
+3.716891700067003e-07
+2.4779278000446693e-07
+1.6519518666964464e-07
+5.506506222321488e-08
+3.6710041482143256e-08
+2.4473360988095507e-08
+8.157786996031835e-09
+5.438524664021224e-09
+1.8128415546737413e-09
+6.042805182245804e-10
+2.0142683940819346e-10
+1.3428455960546232e-10
+4.476151986848744e-11
+2.9841013245658296e-11
+1.9894008830438866e-11
+6.631336276812955e-12
+4.4208908512086375e-12
+2.9472605674724254e-12
+1.9648403783149507e-12
+6.549467927716502e-13
+2.1831559759055006e-13
+termino copia
+tamaño máximo 3
+1.0 1.0
+ambos 2.0
+1.0 1.0
+ambos 4.0
+1.0 1.0
+ambos 8.0
+0.0 1.0
+Solo positivo 8.0 1.0
+0.0 1.0
+Solo positivo 8.0 1.0
+0.0 0.5
+Solo positivo 4.0 0.5
+0.0 0.5
+Solo positivo 2.0 0.5
+0.0 1.0
+Solo positivo 2.0 1.0
+1.0 1.0
+Solo positivo 2.0 1.0
+0.0 1.0
+Solo positivo 2.0 1.0
+1.0 1.0
+Solo positivo 2.0 1.0
+0.0 1.0
+Solo positivo 2.0 1.0
+1.0 1.0
+Solo positivo 2.0 1.0
+1.0 1.0
+Solo positivo 2.0 1.0
+1.0 1.0
+Solo positivo 2.0 1.0
+1.0 1.0
+Solo positivo 2.0 1.0
+0.0 1.0
+Solo positivo 2.0 1.0
+1.0 1.0
+Solo positivo 2.0 1.0
+1.0 1.0
+Solo negativo 2.0 1.0
+1.0 1.0
+Solo negativo 2.0 1.0
+1.0 0.0
+Solo negativo 2.0 1.0
+1.0 1.0
+Solo negativo 2.0 1.0
+1.0 1.0
+Solo positivo 2.0 1.0
+1.0 1.0
+Solo negativo 2.0 1.0
+1.0 0.0
+Solo negativo 2.0 1.0
+1.0 0.0
+Solo negativo 2.0 1.0
+1.0 1.0
+Solo negativo 2.0 1.0
+0.0 1.0
+Solo positivo 2.0 1.0
+1.0 1.0
+Solo positivo 2.0 1.0
+0.0 1.0
+Solo positivo 2.0 1.0
+0.0 1.0
+Solo positivo 2.0 1.0
+1.0 1.0
+Solo negativo 2.0 1.0
+1.0 1.0
+ambos 4.0
+1.0 0.0
+Solo negativo 4.0 1.0
+0.5 0.0
+Solo negativo 2.0 0.5
+1.0 0.0
+Solo negativo 2.0 1.0
+1.0 1.0
+Solo negativo 2.0 1.0
+1.0 0.0
+Solo negativo 2.0 1.0
+1.0 1.0
+Solo negativo 2.0 1.0
+1.0 0.0
+Solo negativo 2.0 1.0
+1.0 1.0
+Solo negativo 2.0 1.0
+1.0 1.0
+Solo negativo 2.0 1.0
+1.0 1.0
+Solo negativo 2.0 1.0
+1.0 0.0
+Solo negativo 2.0 1.0
+1.0 1.0
+Solo positivo 2.0 1.0
+0.0 1.0
+Solo positivo 2.0 1.0
+0.0 1.0
+Solo positivo 2.0 1.0
+1.0 1.0
+Solo negativo 2.0 1.0
+1.0 0.0
+Solo negativo 2.0 1.0
+0.0 1.0
+Solo positivo 2.0 1.0
+1.0 1.0
+Solo negativo 2.0 1.0
+1.0 0.0
+Solo negativo 2.0 1.0
+1.0 1.0
+Solo negativo 2.0 1.0
+1.0 1.0
+Solo negativo 2.0 1.0
+1.0 0.0
+Solo negativo 2.0 1.0
+1.0 1.0
+Solo negativo 2.0 1.0
+0.0 1.0
+Solo positivo 2.0 1.0
+1.0 1.0
+Solo positivo 2.0 1.0
+0.0 1.0
+Solo positivo 2.0 1.0
+0.0 1.0
+Solo positivo 2.0 1.0
+1.0 0.0
+Solo negativo 2.0 1.0
+1.0 1.0
+Solo negativo 2.0 1.0
+1.0 0.0
+Solo negativo 2.0 1.0
+1.0 0.0
+Solo negativo 2.0 1.0
+0.0 1.0
+Solo positivo 2.0 1.0
+0.0 1.0
+Solo positivo 2.0 1.0
+1.0 1.0
+Solo negativo 2.0 1.0
+1.0 0.0
+Solo negativo 2.0 1.0
+1.0 0.0
+Solo negativo 2.0 1.0
+1.0 0.0
+Solo negativo 2.0 1.0
+1.0 1.0
+Solo negativo 2.0 1.0
+1.0 0.0
+Solo negativo 2.0 1.0
+1.0 0.0
+Solo negativo 2.0 1.0
+1.0 0.0
+Solo negativo 2.0 1.0
+1.0 1.0
+Solo negativo 2.0 1.0
+1.0 0.0
+Solo negativo 2.0 1.0
+1.0 0.0
+Solo negativo 2.0 1.0
+0.0 1.0
+Solo positivo 2.0 1.0
+1.0 1.0
+Solo positivo 2.0 1.0
+0.0 1.0
+Solo positivo 2.0 1.0
+0.0 1.0
+Solo positivo 2.0 1.0
+0.0 1.0
+Solo positivo 2.0 1.0
+0.0 1.0
+Solo positivo 2.0 1.0
+1.0 0.0
+Solo negativo 2.0 1.0
+1.0 0.0
+Solo negativo 2.0 1.0
+1.0 0.0
+Solo negativo 2.0 1.0
+1.0 0.0
+Solo negativo 2.0 1.0
+1.0 1.0
+Solo negativo 2.0 1.0
+1.0 0.0
+Solo negativo 2.0 1.0
+1.0 0.0
+Solo negativo 2.0 1.0
+1.0 0.0
+Solo negativo 2.0 1.0
+1.0 1.0
+Solo negativo 2.0 1.0
+1.0 0.0
+Solo negativo 2.0 1.0
+1.0 0.0
+Solo negativo 2.0 1.0
+1.0 0.0
+Solo negativo 2.0 1.0
+1.0 1.0
+Solo negativo 2.0 1.0
+1.0 0.0
+Solo negativo 2.0 1.0
+1.0 0.0
+Solo negativo 2.0 1.0
+1.0 1.0
+Solo negativo 2.0 1.0
+1.0 1.0
+ambos 4.0
+0.0 1.0
+Solo positivo 4.0 1.0
+0.0 0.5
+Solo positivo 2.0 0.5
+0.0 1.0
+Solo positivo 2.0 1.0
+1.0 1.0
+Solo positivo 2.0 1.0
+0.0 1.0
+Solo positivo 2.0 1.0
+1.0 1.0
+Solo positivo 2.0 1.0
+0.0 1.0
+Solo positivo 2.0 1.0
+1.0 1.0
+Solo positivo 2.0 1.0
+1.0 1.0
+Solo positivo 2.0 1.0
+1.0 1.0
+Solo positivo 2.0 1.0
+1.0 1.0
+Solo positivo 2.0 1.0
+0.0 1.0
+Solo positivo 2.0 1.0
+1.0 1.0
+Solo positivo 2.0 1.0
+1.0 1.0
+Solo negativo 2.0 1.0
+1.0 1.0
+Solo negativo 2.0 1.0
+1.0 0.0
+Solo negativo 2.0 1.0
+0.0 1.0
+Solo positivo 2.0 1.0
+1.0 1.0
+Solo negativo 2.0 1.0
+1.0 1.0
+Solo positivo 2.0 1.0
+1.0 1.0
+Solo positivo 2.0 1.0
+1.0 1.0
+Solo negativo 2.0 1.0
+1.0 1.0
+Solo negativo 2.0 1.0
+1.0 1.0
+ambos 4.0

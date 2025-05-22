@@ -128,8 +128,6 @@ class arbol:
                 self.value = h.value
                 self.var = h.var
                 self.hijos = h.hijos
-
-
                 return
         self.hijos[0].poda(Q)
         self.hijos[1].poda(Q)
@@ -148,8 +146,8 @@ class arbol:
 
                 return
 
-            if isinstance(self.hijos[0].value,boolean) or isinstance(self.hijos[1].value,boolean):
-                return
+            if self.hijos[0].value.contradict() or self.hijos[1].value.contradict():
+                return 
 
             if len(set(self.hijos[0].value.listavar).union(set(self.hijos[1].value.listavar)))<=Q-1:
                 v = self.var

@@ -178,35 +178,20 @@ def main(prob, Previo=True, Mejora=False): #EDM
 
         nuevo = prob.copia() 
 
-        print("termino copia")
 
-
-
-
-
-
-        
-
-        
-       
-        t1 = time()
-
-       
-           
-
-   
+        # print("termino copia")
 
 
         (res,msize) = nuevo.borraf(32)
+
         res.prob = prob.prob.copy()
+        res.w = prob.w
         res.addproborden()
+        return res
      
 
-        sleep(5)
 
-        t2 = time()
 
-        print(t2-t1)
 
 
 
@@ -257,6 +242,7 @@ def computetreewidhts(archivolee):
 
 
 def borradocontablas(archivolee, Q=[5,10,15,20,25,30],Mejora=[False], Previo=[True], Partir=[True], archivogenera="salida.csv"):
+        
         reader=open(archivolee,"r")
         writer=open(archivogenera,"w")
         writer.write("Problema;Variable;Claúsulas;Q;MejoraLocal;Previo;PartirVars;TLectura;TBúsqueda;TTotal;SAT\n")
@@ -304,7 +290,79 @@ def borradocontablas(archivolee, Q=[5,10,15,20,25,30],Mejora=[False], Previo=[Tr
         #     writer.write("tiempo medio " + str(ttotal/i)+"\n")
         writer.close()
         reader.close()    
+
+def experimentimportance(archivolee, Q=30, archivogenera="salida.csv"):
+    reader=open(archivolee,"r")
+    writer=open(archivogenera,"w")
+    writer.write("Problema;Tcomputation;Tsampling;TTotal;Ceros;Pevidence;Variance;SAT\n")
+    ttotal = 0
+    # i=0
+    for linea in reader:
+        # i=i+1
+        linea = linea.rstrip()
+        if len(linea)>0:
+            nombre=linea.strip()
+            print(nombre)     
+            t1 = time()
+            (tablas,evi) = leeficheroUAI(nombre)
+            t3 = time()
+            cadena= nombre + ";"
+            prob = varpot()
+            lclu = [p.getvars() for p in tablas] + [[abs(v)] for v in evi]
+            (orden,prob.clusters,prob.borr,prob.posvar,prob.child,prob.parent) = triangulap(lclu)
+            print(max([len(x) for x in prob.clusters]))
+            prob.orden = orden
+            prob.computefromBayes(tablas,evi)
+            res  = main(prob, 'True','False') #EDM 
+            t4 = time()
+
+
+            cadena =  cadena + str(t4-t3) + "\n"    
+
+            # number = len(res.count())
+            # print(number)
+
+            res0 = res.copia()
+            
+            t5 = time()
+            (ceros,medi,var, weights)= res0.importancesampling(method = 0)
+            t6 = time()
+            cadena = cadena + str(t6-t5) + ";" + str(t6-t5+t4-t3)  + ";" + str(ceros) + ";" + str(medi) +  ";" + str(var) + "\n"
+            res1 = res.copia()
+            
+
+            t5 = time()
+            (ceros,medi,var, weights)= res1.importancesampling(method = 1)
+            t6 = time()
+            cadena = cadena + str(t6-t5) + ";" + str(t6-t5+t4-t3)  + ";" + str(ceros) + ";" + str(medi) +  ";" + str(var) + "\n"
+
+            res2 = res.copia()
+            t5 = time()
+            (ceros,medi,var, weights)= res2.importancesampling(method = 2)
+            t6 = time()
+            cadena = cadena + str(t6-t5) + ";" + str(t6-t5+t4-t3)  + ";" + str(ceros) + ";" + str(medi) +  ";" + str(var) + "\n"
+
+            res3 = res.copia()
+            t5 = time()
+            (ceros,medi,var, weights)= res3.importancesampling2(method = 0)
+            t6 = time()
+            cadena = cadena + str(t6-t5) + ";" + str(t6-t5+t4-t3)  + ";" + str(ceros) + ";" + str(medi) +  ";" + str(var) + "\n"
+
+            res4 = res.copia()
+            t5 = time()
+            (ceros,medi,var, weights)= res4.importancesampling2(method = 2)
+            t6 = time()
+            cadena = cadena + str(t6-t5) + ";" + str(t6-t5+t4-t3)  + ";" + str(ceros) + ";" + str(medi) +  ";" + str(var) + "\n"
+            writer.write(cadena)
+            print(cadena)
+
+    writer.close()
+    reader.close()    
+    
+
     
 # computetreewidhts("ListaCNF_Experimento.txt")
-borradocontablas("entrada",[5],[False],[True],[False],"prueba05.txt")
+# borradocontablas("entrada",[20],[False],[True],[False],"prueba05.txt")
 # borradofacil("entrada",[5,10,15,20,25],[False],[False],[True],"resultado.txt")
+experimentimportance("entrada",20,"outimportance.txt")
+

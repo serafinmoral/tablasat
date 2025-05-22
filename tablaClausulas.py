@@ -222,7 +222,7 @@ class nodoTabla:
     
     def copia(self):
         result = nodoTabla(self.listavar.copy())
-        if isinstance(self.tabla,boolean):
+        if isinstance(self.tabla,boolean) or isinstance(self.tabla,int):
             result.tabla = self.tabla
         else:
             result.tabla = self.tabla.copy()
@@ -397,6 +397,164 @@ class nodoTabla:
         result.tabla = result.tabla & op.tabla    
         if not inplace:
             return result
+        
+
+    
+
+    def combinab(self,op,inplace = False, des= False):
+        from arboltabla import arbol
+
+        if isinstance(op,arbol):
+            return op.combina(self)
+        
+        if isinstance(self.tabla,boolean):
+            if self.tabla:
+                if inplace:
+                    self = op.copia()
+                    return self
+                else:
+                    return op.copia()
+            else:
+                if inplace:
+                    return self
+                else:
+                    return self.copia()
+                
+        
+            
+        if isinstance(self.tabla,float)or isinstance(self.tabla,int) :
+                x = self.tabla
+                if inplace:
+                    
+                    self = op
+                    self.tabla = self.tabla*x
+                    return self
+                else:
+                    h = op.copia()
+                    h.tabla = h.tabla*self.tabla
+                    return h
+        
+            
+
+        result = self if inplace else self.copia()
+
+        if isinstance(op.tabla,boolean):
+            if op.tabla:
+                return result
+            else:
+                result.tabla = nodoTabla([])
+                result.anula()
+                return result
+        
+        if not des:
+            op = op.copia()
+        extra = set(op.getvars()) - set(result.getvars())
+        if extra:
+                slice_ = [slice(None)] * len(result.getvars())
+                slice_.extend([np.newaxis] * len(extra))
+
+                result.tabla = result.tabla[tuple(slice_)]
+
+                result.listavar.extend(extra)
+
+        extra = set(result.getvars()) - set(op.getvars())
+        if extra:
+                slice_ = [slice(None)] * len(op.listavar)
+                slice_.extend([np.newaxis] * len(extra))
+
+                op.tabla = op.tabla[tuple(slice_)]
+
+                op.listavar.extend(extra)
+                # No need to modify cardinality as we don't need it.
+
+            # rearranging the axes of phi1 to match phi
+        for axis in range(result.tabla.ndim):
+            exchange_index = op.listavar.index(result.listavar[axis])
+            op.listavar[axis], op.listavar[exchange_index] = (
+                op.listavar[exchange_index],
+                op.listavar[axis],
+            )
+            op.tabla = op.tabla.swapaxes(axis, exchange_index)
+
+        result.tabla = result.tabla * op.tabla    
+        if not inplace:
+            return result
+
+    
+
+    def divideb(self,op,inplace = False, des= False):
+        from arboltabla import arbol
+
+        if isinstance(op,arbol):
+            return op.combina(self)
+        
+        if isinstance(self.tabla,boolean):
+            if self.tabla:
+                if inplace:
+                    self = op.copia()
+                    return self
+                else:
+                    return op.copia()
+            else:
+                if inplace:
+                    return self
+                else:
+                    return self.copia()
+            
+
+            
+
+        result = self if inplace else self.copia()
+
+        if isinstance(op.tabla,boolean):
+            if op.tabla:
+                return result
+            else:
+                result.tabla = nodoTabla([])
+                result.anula()
+                return result
+        
+        if not des:
+            op = op.copia()
+        extra = set(op.getvars()) - set(result.getvars())
+        if extra:
+                slice_ = [slice(None)] * len(result.getvars())
+                slice_.extend([np.newaxis] * len(extra))
+
+                result.tabla = result.tabla[tuple(slice_)]
+
+                result.listavar.extend(extra)
+
+        extra = set(result.getvars()) - set(op.getvars())
+        if extra:
+                slice_ = [slice(None)] * len(op.listavar)
+                slice_.extend([np.newaxis] * len(extra))
+
+                op.tabla = op.tabla[tuple(slice_)]
+
+                op.listavar.extend(extra)
+                # No need to modify cardinality as we don't need it.
+
+            # rearranging the axes of phi1 to match phi
+        for axis in range(result.tabla.ndim):
+            exchange_index = op.listavar.index(result.listavar[axis])
+            op.listavar[axis], op.listavar[exchange_index] = (
+                op.listavar[exchange_index],
+                op.listavar[axis],
+            )
+            op.tabla = op.tabla.swapaxes(axis, exchange_index)
+        
+        result.tabla = result.tabla/op.tabla   
+
+        result.tabla[np.isnan(result.tabla)] = 0
+
+
+            
+
+          
+        if not inplace:
+            return result
+
 
     def checkdetermi(self,v):
         if v not in self.listavar:
@@ -535,6 +693,62 @@ class nodoTabla:
             op.tabla = op.tabla.swapaxes(axis, exchange_index)
 
         result.tabla = result.tabla | op.tabla    
+        if not inplace:
+            return result
+
+
+
+    def sumab(self,op,inplace = False, des= False):
+        result = self if inplace else self.copia()
+        if isinstance(op.tabla,boolean):
+            if op:
+                return result
+            else:
+                result.tabla = result.tabla | op.tabla
+                return result
+            
+        if isinstance(self.tabla,boolean):
+            if self.tabla:
+                return result
+            else:
+                    result = op.copia()
+                    return result
+                
+
+                
+            
+
+        if not des:
+            op = op.copia()
+        extra = set(op.listavar) - set(result.listavar)
+        if extra:
+                slice_ = [slice(None)] * len(result.listavar)
+                slice_.extend([np.newaxis] * len(extra))
+
+                result.tabla = result.tabla[tuple(slice_)]
+
+                result.listavar.extend(extra)
+
+        extra = set(result.listavar) - set(op.listavar)
+        if extra:
+                slice_ = [slice(None)] * len(op.listavar)
+                slice_.extend([np.newaxis] * len(extra))
+
+                op.tabla = op.tabla[tuple(slice_)]
+
+                op.listavar.extend(extra)
+                # No need to modify cardinality as we don't need it.
+
+            # rearranging the axes of phi1 to match phi
+        for axis in range(result.tabla.ndim):
+            exchange_index = op.listavar.index(result.listavar[axis])
+            op.listavar[axis], op.listavar[exchange_index] = (
+                op.listavar[exchange_index],
+                op.listavar[axis],
+            )
+            op.tabla = op.tabla.swapaxes(axis, exchange_index)
+
+        result.tabla = result.tabla + op.tabla    
         if not inplace:
             return result
 
@@ -681,6 +895,25 @@ class nodoTabla:
         phi.listavar = [phi.listavar[index] for index in index_to_keep]
 
         phi.tabla = np.amax(phi.tabla, axis=tuple(var_indexes))
+
+        if not inplace:
+            return phi
+        
+           
+
+    def borrab(self,variables, inplace=False):
+
+        phi = self if inplace else self.copia()   
+        for var in variables:
+            if var not in phi.listavar:
+                raise ValueError(f"{var} no está en la lista.")
+
+        var_indexes = [phi.listavar.index(var) for var in variables]
+
+        index_to_keep = sorted(set(range(len(self.listavar))) - set(var_indexes))
+        phi.listavar = [phi.listavar[index] for index in index_to_keep]
+
+        phi.tabla = np.sum(phi.tabla, axis=tuple(var_indexes))
 
         if not inplace:
             return phi

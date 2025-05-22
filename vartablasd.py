@@ -124,6 +124,7 @@ class varpot:
             self.posvar = dict()
             self.clau = dict()
             self.prob = dict()
+            self.w = 1
             
             
           
@@ -150,6 +151,7 @@ class varpot:
         
 
         def computefromBayes(self,tables,evid):
+            self.w  = 1
             tar = []
             for p in tables:
                 q = p.reduce(evid)
@@ -159,18 +161,30 @@ class varpot:
                 self.insertar(p)
             for p in tar:
                 self.insertbay(p)
+               
                 q = nodoTabla(p.listavar)
                 q.tabla = p.tabla > 0
                 if not q.trivial():
                     self.insertar(q)
 
         def insertbay(self,p):
+            if not p.getvars():
+                print("sin variables ")
+                self.w = self.w*p.tabla
+                print(self.w)
+                # sleep(3)
             for v in p.getvars():
                 if v in self.prob:
                     self.prob[v].append(p)
                 else:
                     self.prob[v] = [p]
 
+            
+            
+        def removebay(self,p):    
+            for v in p.getvars():
+                self.prob[v].remove(p)
+               
 
         def getpot(self,Q=5):
             res = []
@@ -232,9 +246,15 @@ class varpot:
 
             for v in self.clau:
                 res.clau[v] = self.clau[u].copy()
+
+            for v in self.prob:
+                res.prob[v] = self.prob[v].copy()
+
    
             res.orden = self.orden.copy()
             res.posvar = self.posvar.copy()
+
+            res.w = self.w
             
             
             return res
@@ -259,7 +279,9 @@ class varpot:
             return res 
 
         def level(self,p):
-            return min([self.posvar[x] for x in p])
+            print(self.posvar)
+            print(p.listavar)
+            return min([self.posvar[x] for x in p.getvars()])
 
         
         def levelc(self,cl):
@@ -424,7 +446,7 @@ class varpot:
              
             return res
             
-            
+             
  
         def simplifica(self,p):
             
@@ -3133,11 +3155,12 @@ class varpot:
             torden = []
             
             while vorig and not trabajo.contradict: 
-                var = trabajo.siguientep(vorig)
-            
-                # var = trabajo.orden[0]
+                if not self.orden:
+                    var = trabajo.siguientep(vorig)
+                else:
+                    var = trabajo.orden[0]
                 i = self.orden.index(var)
-                print("var ", var, i, len(vorig),  trabajo.tad(var))
+                # print("var ", var, i, len(vorig),  trabajo.tad(var))
                 
 
                 # if trabajo.tad(var)>=Q:
@@ -3147,7 +3170,7 @@ class varpot:
                 list2 = trabajo.getd(var)
                 list3 = trabajo.getm(var)
 
-                print(len(list1),len(list2),len(list3))
+                # print(len(list1),len(list2),len(list3))
 
                 for p in list1:
                             trabajo.eliminar(p)
@@ -3180,7 +3203,7 @@ class varpot:
                 
                         l = p.descomponev(var)
                         if len(l)>1:
-                            print(len(p.getvars()),len(l[0].getvars()), len(l[1].getvars()))
+                            # print(len(p.getvars()),len(l[0].getvars()), len(l[1].getvars()))
                             self.insertar(l[1])
                             if not l[0].trivial():
                                 list1.append(l[0])
@@ -3201,7 +3224,7 @@ class varpot:
 
 
                 if list2:
-                    print("determinista")
+                    # print("determinista")
                     pivote = min(list2, key = lambda x: len(x.getvars()))
                     res.insertars(pivote)
                     if len(list1) + len(list2) + len(list3)<=1:
@@ -3334,12 +3357,242 @@ class varpot:
                 if v not in self.orden:
                     self.orden = [v] + self.orden
 
-        def importancesampling(self, N=500):
+
+        def importancesampling(self, N=1000, method = 0, K=10):
+            
+            borr = self.orden.copy()
+            
+            listprobb = []
+            listlogic = []
+            listprob = []
+            oldw = self.w
+            sumw = dict()
+            for x in borr:
+                sumw[x] = 0.0
+                sumw[-x] = 0.0
+
+            t1 = time()
+            listprobb = []
+            for v in borr:
+                 for p in self.prob.get(v,[]):
+                     if not p in listprobb:
+                         listprobb.append(p)
+
+            for v in borr:
+                ll = self.get(v) + self.getd(v)
+                ld = self.getd(v)
+                listlogic.append(ll)
+                for p in ll:
+                    self.eliminar(p)
+                lp = self.prob.get(v,[]).copy()
+
+                listprob.append(lp)
+                for p in lp:
+                    self.removebay(p)
+
+                lpc = lp.copy()
+                if ld and method==0:
+                    for p in lpc:
+                        for q in  ld:
+                            print(q.getvars(), p.getvars())
+                            if q.getvars() <= p.getvars():
+                                print("Reducción")
+                                h = p.combinab(q).sumab([v])
+                                self.insertbay(h)
+                                lp.remove(p)
+                                print("quito ")
+                                print(p.tabla)
+                                print("añado ")
+                                print(h)
+                                break
+
+                elif ld and (method==1 or method ==2):
+                    piv = min(ld, key= lambda x: len(x.getvars()))
+                    for p in lpc:
+                        print("Reducción")
+                        h = p.combinab(piv).borrab([v])
+                        self.insertbay(h)
+                        lp.remove(p)
+                        print("quito ")
+                        print(q.tabla)
+                        print("añado ")
+                        print(h)
+
+                elif method==2 and lp:
+
+                    h = lp.pop()
+                
+                    
+                    lpc = lp.copy()
+                    for p in lpc:
+                        lp.remove(p)
+            
+                    for p in lpc:
+                        if len(set(h.getvars()).union(set(p.getvars()))) <=K:
+                            h = h.combinab(p)
+                        else:
+                            if h.getvars():
+                                q = h.borrab([v])
+                                self.insertbay(q)
+                                t = h.divideb(q)
+                                lp.append(t)
+                                h = p
+                                # if not q.getvars():
+                                #     print(h.tabla)
+                                #     print(q.tabla)
+                                #     print(t.tabla)
+                    if h.getvars():
+                         q = h.borrab([v])
+                         self.insertbay(q)
+                         t = h.divideb(q)
+                         lp.append(t)
+                        #  if not q.getvars():
+                        #      print(h.tabla)
+                        #      print(q.tabla)
+                        #      print(t.tabla)
+                             
+
+
+
+                                                    
+
+            ttotal = 0                        
+                    
+                    
+             
+            borr.reverse()
+            listlogic.reverse()
+            listprob.reverse()
+
+            pesos = 0.0
+            pesos2 = 0.0
+            ceros = 0
+
+           
+            
+            
+            for j in range(N):
+
+                sol = []
+                pe = 1.0
+                for i in range(len(borr)):
+                    
+                    var = borr[i]
+
+                    ll = listlogic[i]
+                    lp = listprob[i]
+                    pos = False
+                    neg = False
+                    t1 = time()
+                    for p in ll:
+                        
+
+                        h = p.reduce(sol)
+                   
+                        # if not len(h.getvars()) == 1:
+                        #     print("algo va mal longitud de variables")
+                        #     sleep(5)
+                        if not h.tabla[0]:
+                            pos = True
+        
+                        if not h.tabla[1]:
+                            neg = True
+                    # if pos and neg:
+                    #     print("peso 0")
+                        
+                    #     sleep(5)
+                    #     break
+
+                    ttotal += (time()-t1)
+
+                    pw = 1.0
+                    nw = 1.0
+                    for p in lp:
+                        h = p.reduce(sol)
+                        # if not len(h.getvars()) == 1:
+                        #     print("algo va mal longitud de variables prob")
+                        #     print(h.getvars())
+                        #     print(p.getvars())
+                        #     print(var)
+                        #     print(446 in self.orden)
+                        #     print(446 in sol, -446 in sol)
+                        #     print(sol)
+                            # sleep(5)
+                        nw *= h.tabla[0]
+                        pw *= h.tabla[1]
+                    # print("pesos= ",method,nw,pw)
+
+                    if pos and not neg:
+                        sol.append(var)
+                        pe *= pw
+                        # 
+                        # print("Solo positivo", pe, pw)
+                        # sleep(0.02)
+                        # if pe == 0:
+                        #     print("peso 0 no coherente")
+                        #     sleep(50)
+
+                    if neg and not pos:
+                        sol.append(-var)
+                        pe *= nw
+                        # print("Solo negativo", pe, nw)
+
+                      
+                    if not neg and not pos:
+                        value = choices([-var,var], weights = [nw,pw])
+                        pe *= (nw+pw)
+                    
+                        # print("ambos",pe,nw,pw)
+                      
+                        sol.append(value[0])
+
+                
+
+                for x in sol:
+                    sumw[x] += pe   
+                    
+                if pe == 0:
+                    ceros+=1
+                else:
+                    pesos += pe
+                    pesos2 += pe*pe
+
+                # pc = 1.0
+                # opc = 1.0
+                # for i in range(len(borr)):
+                #     lp = listprob[i]
+                #     for p in lp:
+                #         pc*= p.getvalue(sol)
+                # for p in listprobb:
+                #         opc*= p.getvalue(sol)
+                # print(oldw,self.w)
+                # print(pc*self.w,opc*oldw)
+                
+
+                
+
+            print(ttotal)
+            print(self.w,pesos)
+
+            pesos = pesos*self.w
+            pesos2 = pesos2*self.w*self.w
+
+
+
+            me = pesos/N
+            va = pesos2/N - me*me
+
+          
+
+
+
+            return(ceros,me , va, sumw )
+
+        def importancesampling2(self, N=1000, method = 0, K=10):
             
             borr = self.orden.copy()
             
 
-            listlogic = []
             listprob = []
             sumw = dict()
             for x in borr:
@@ -3348,20 +3601,53 @@ class varpot:
 
 
             for v in borr:
-                ll = self.get(v) + self.getd(v)
-       
-                listlogic.append(ll)
-                for p in ll:
-                    self.eliminar(p)
+                
                 lp = self.prob.get(v,[]).copy()
                 listprob.append(lp)
                 for p in lp:
-                    for x in p.getvars():
-                        self.prob[x].remove(p)
+                    self.removebay(p)
+
+                
+
+              
+
+                if method==2 and lp:
+
+                    h = lp.pop()
+                
+                    
+                    lpc = lp.copy()
+                    for p in lpc:
+                        lp.remove(p)
+            
+                    for p in lpc:
+                        if len(set(h.getvars()).union(set(p.getvars()))) <=K:
+                            h = h.combinab(p)
+                        else:
+                            if h.getvars():
+                                q = h.borrab([v])
+                                self.insertbay(q)
+                                t = h.divideb(q)
+                                lp.append(t)
+                                h = p
+                                # if not q.getvars():
+                                #     print(h.tabla)
+                                #     print(q.tabla)
+                                #     print(t.tabla)
+                    if h.getvars():
+                         q = h.borrab([v])
+                         self.insertbay(q)
+                         t = h.divideb(q)
+                         lp.append(t)
+                        #  if not q.getvars():
+                        #      print(h.tabla)
+                        #      print(q.tabla)
+                        #      print(t.tabla)
+                             
+
                     
 
             borr.reverse()
-            listlogic.reverse()
             listprob.reverse()
 
             pesos = 0.0
@@ -3377,75 +3663,45 @@ class varpot:
                 for i in range(len(borr)):
                     
                     var = borr[i]
-                    
-                   
 
-
-                    ll = listlogic[i]
                     lp = listprob[i]
-                    pos = False
-                    neg = False
-                    for p in ll:
-                       
-                        h = p.reduce(sol)
-                   
-                        if not len(h.getvars()) == 1:
-                            print("algo va mal longitud de variables")
-                            sleep(5)
-                        if not h.tabla[0]:
-                            pos = True
-        
-                        if not h.tabla[1]:
-                            neg = True
-                    if pos and neg:
-                        print("peso 0")
-                        
-                        sleep(5)
-                        break
+                 
+                 
 
                     pw = 1.0
                     nw = 1.0
                     for p in lp:
                         h = p.reduce(sol)
-                        if not len(h.getvars()) == 1:
-                            print("algo va mal longitud de variables prob")
-                            print(h.getvars())
-                            print(p.getvars())
-                            print(var)
-                            print(446 in self.orden)
-                            print(446 in sol, -446 in sol)
-                            print(sol)
-                            sleep(5)
+                        # if not len(h.getvars()) == 1:
+                        #     print("algo va mal longitud de variables prob")
+                        #     print(h.getvars())
+                        #     print(p.getvars())
+                        #     print(var)
+                        #     print(446 in self.orden)
+                        #     print(446 in sol, -446 in sol)
+                        #     print(sol)
+                            # sleep(5)
                         nw *= h.tabla[0]
                         pw *= h.tabla[1]
 
-                    if pos and not neg:
-                        sol.append(var)
-                        pe *= pw
-                        if pe == 0:
-                            print("peso 0 no coherente")
-                            sleep(50)
-
-                    if neg and not pos:
-                        sol.append(-var)
-                        pe *= nw
-                        if pe == 0:
-                            print("peso 0 no coherente")
-                            sleep(50)
-
-                    if not neg and not pos:
+                  
+                      
+                    if nw+pw>0:
                         value = choices([-var,var], weights = [nw,pw])
-                        if nw==0 or pw == 0:
-                            print("peso 0 no coherente")
-                            sleep(50)
                         sol.append(value[0])
 
-                print(pe)
+                    else:
+                        sol.append(-var)
+                    pe *= (nw+pw)
+                      
+
                         
+                if math.isnan(pe):
+                    pe = 0.0
 
-
-                                  
-                    
+                # print(pe)                 
+                for x in sol:
+                    sumw[x] += pe   
                     
                 if pe == 0:
                     ceros+=1
@@ -3453,12 +3709,20 @@ class varpot:
                     pesos += pe
                     pesos2 += pe*pe
 
+            print(self.w,pesos)
+            
+            pesos = pesos*self.w
+            pesos2 = pesos2 * self.w*self.w
+
+
             me = pesos/N
             va = pesos2/N - me*me
 
+         
 
 
-            return(ceros,me, va/N )
+            return(ceros,me , va, sumw )
+
 
         def count(self,  Q=1.0E6):
             
