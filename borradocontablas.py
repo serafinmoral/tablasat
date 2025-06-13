@@ -317,7 +317,7 @@ def experimentimportance(archivolee, Q=30, archivogenera="salida.csv"):
             t4 = time()
 
 
-            cadena =  cadena + str(t4-t3) + "\n"    
+            cadena =  cadena + str(t4-t3) + "\n"    s
 
             # number = len(res.count())
             # print(number)
