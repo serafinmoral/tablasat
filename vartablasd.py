@@ -3204,7 +3204,7 @@ class varpot:
                         l = p.descomponev(var)
                         if len(l)>1:
                             # print(len(p.getvars()),len(l[0].getvars()), len(l[1].getvars()))
-                            self.insertar(l[1])
+                            trabajo.insertar(l[1])
                             if not l[0].trivial():
                                 list1.append(l[0])
                         else:
@@ -3352,6 +3352,185 @@ class varpot:
             res.orden = torden
             return (res,msize)
         
+
+        
+
+
+        def borra(self,Q, xor = None):
+            
+            vorig  = self.getvars()
+            trabajo = self
+            res = varpot()
+            res.orden = self.orden.copy()
+            msize = 0
+
+            torden = []
+            
+            while vorig and not trabajo.contradict: 
+                if not self.orden:
+                    var = trabajo.siguientep(vorig)
+                else:
+                    var = trabajo.orden[0]
+                i = self.orden.index(var)
+                # print("var ", var, i, len(vorig),  trabajo.tad(var))
+                
+
+                # if trabajo.tad(var)>=Q:
+                #     return 
+
+                list1 = trabajo.get(var)
+                list2 = trabajo.getd(var)
+
+                # print(len(list1),len(list2),len(list3))
+
+                for p in list1:
+                            trabajo.eliminar(p)
+                for p in list2:
+                            trabajo.eliminar(p)   
+                     
+             
+                torden.append(var)
+                vorig.discard(var)
+                del self.orden[i]
+                
+               
+
+
+                n = len(list1) + len(list2) 
+
+             
+                
+                list1.sort(key = lambda x :  len(x.getvars()) )
+
+                       
+
+
+                if n>1:
+                    nl = list1.copy()
+                    list1 = []
+                        
+                    for p in nl:
+                
+                        l = p.descomponev(var)
+                        if len(l)>1:
+                            # print(len(p.getvars()),len(l[0].getvars()), len(l[1].getvars()))
+                            trabajo.insertar(l[1])
+                            if not l[0].trivial():
+                                list1.append(l[0])
+                        else:
+                            list1.append(p)
+                        # sleep(5)
+                if not list2 and len(list1)>1:
+                    # print(len(list1))
+                    s = nodoTabla([])
+                    for p in list1:
+                        s = s.combina(p)
+                    
+                    list1 = [s]
+                    
+                    # groupp(list1,Q=Q)
+                    # print(len(list1) , [len(x.getvars()) for x in list1])
+                    # sleep(5)
+
+
+                if list2:
+                    # print("determinista")
+                    pivote = min(list2, key = lambda x: len(x.getvars()))
+                    res.insertars(pivote)
+                    if len(list1) + len(list2) <=1:
+                        h = pivote.borra([var], inplace = False)
+                        msize = max(msize,len(pivote.getvars()))
+                        trabajo.insertar(h)
+                        
+                        
+                            
+                    
+                    else:
+                        for p in list1:
+                                
+
+                                pivote = min(list2, key=lambda x: len(set(p.getvars()).union(set(x.getvars()))))
+                                h = pivote.combina(p)
+                                msize = max(msize,len(h.getvars()))
+
+                                h = h.borra([var])
+                                # print("inserto " ,h.getvars())
+                                
+                                trabajo.insertar(h)
+                            
+                                # print("salgo de insertar")
+                                
+                                if trabajo.contradict:
+                                    break
+
+                        
+                        
+                                
+                                
+                                        
+
+
+                        list2.sort(key = lambda x :  len(x.getvars()) )
+
+                        while len(list2) > 1:
+                                p = list2.pop()
+                                pivote =  min(list2, key=lambda x: len(set(p.getvars()).union(set(x.getvars()))))
+                                h = pivote.combina(p)
+                                msize = max(msize,len(h.getvars()))
+                                h = h.borra([var])
+                                # print("inserto " ,h.getvars())
+                                
+                                trabajo.insertar(h)
+                               
+                                # print("salgo de insertar")
+                                if trabajo.contradict:
+                                    break
+                        p = list2.pop()
+                        r = p.borra([var])
+                        trabajo.insertar(r)
+                                
+
+                                
+
+                elif list1:
+
+                    listt = list1
+                    k = len(listt)
+                    for i in range(k):
+                        r1 = listt[i]
+                        for j in range(i+1,k):
+                            r2 = listt[j]
+                            res1 = r1.combina(r2).borra([var])
+                            trabajo.insertar(res1)
+                            msize = max(msize,len(res1.getvars()))
+
+                    for p in listt:
+                        res.insertars(p)
+                        r = p.borra([var])
+                        msize = max(msize,len(p.getvars()))
+
+
+                        trabajo.insertar(r)
+                    if trabajo.contradict:
+                                    break
+
+
+
+
+            if self.contradict:
+                print("contradict")
+
+            print("tamaño máximo", msize)
+            sleep(5)
+            # else:
+            #     orden = self.orden.copy()
+            #     self.recomputeorderb(var)
+            #     self.minid(Q-1,ins=False)
+            #     self.orden = orden
+
+            res.orden = torden
+            return (res,msize)
+
         def addproborden(self):
             for v in self.prob:
                 if v not in self.orden:

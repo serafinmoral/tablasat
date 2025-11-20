@@ -182,7 +182,7 @@ def main(prob, Previo=True, Mejora=False): #EDM
         # print("termino copia")
 
 
-        (res,msize) = nuevo.borraf(32)
+        (res,msize) = nuevo.borra(32)
 
         res.prob = prob.prob.copy()
         res.w = prob.w
@@ -317,7 +317,7 @@ def experimentimportance(archivolee, Q=30, archivogenera="salida.csv"):
             t4 = time()
 
 
-            cadena =  cadena + str(t4-t3) + "\n"    s
+            cadena =  cadena + str(t4-t3) + "\n"   
 
             # number = len(res.count())
             # print(number)
@@ -364,5 +364,5 @@ def experimentimportance(archivolee, Q=30, archivogenera="salida.csv"):
 # computetreewidhts("ListaCNF_Experimento.txt")
 # borradocontablas("entrada",[20],[False],[True],[False],"prueba05.txt")
 # borradofacil("entrada",[5,10,15,20,25],[False],[False],[True],"resultado.txt")
-experimentimportance("entrada",20,"outimportance.txt")
+experimentimportance("entrada",20,"outimportanceb.txt")
 
