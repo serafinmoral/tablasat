@@ -1,0 +1,6 @@
+bayesian/blockmap_10_03-0009.uai
+bayesian/blockmap_10_03-0010.uai
+bayesian/blockmap_15_01-0008.uai
+bayesian/blockmap_15_02-0008.uai
+bayesian/blockmap_15_03-0010.uai
+bayesian/blockmap_20_01-0009.uai

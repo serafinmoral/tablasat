@@ -10,6 +10,8 @@ from utils import *
 from time import *
 from random import shuffle,choices
 from arboltabla import *
+import sys 
+
 
 def update(value,dvar,dvard,total):
     for x in total:
@@ -169,9 +171,9 @@ class varpot:
 
         def insertbay(self,p):
             if not p.getvars():
-                print("sin variables ")
+                # print("sin variables ")
                 self.w = self.w*p.tabla
-                print(self.w)
+                # print(self.w)
                 # sleep(3)
             for v in p.getvars():
                 if v in self.prob:
@@ -3537,7 +3539,7 @@ class varpot:
                     self.orden = [v] + self.orden
 
 
-        def importancesampling(self, N=1000, method = 0, K=10):
+        def importancesampling(self, N=1000, method = 0, K=15):
             
             borr = self.orden.copy()
             
@@ -3570,34 +3572,9 @@ class varpot:
                     self.removebay(p)
 
                 lpc = lp.copy()
-                if ld and method==0:
-                    for p in lpc:
-                        for q in  ld:
-                            print(q.getvars(), p.getvars())
-                            if q.getvars() <= p.getvars():
-                                print("Reducción")
-                                h = p.combinab(q).sumab([v])
-                                self.insertbay(h)
-                                lp.remove(p)
-                                print("quito ")
-                                print(p.tabla)
-                                print("añado ")
-                                print(h)
-                                break
+               
 
-                elif ld and (method==1 or method ==2):
-                    piv = min(ld, key= lambda x: len(x.getvars()))
-                    for p in lpc:
-                        print("Reducción")
-                        h = p.combinab(piv).borrab([v])
-                        self.insertbay(h)
-                        lp.remove(p)
-                        print("quito ")
-                        print(q.tabla)
-                        print("añado ")
-                        print(h)
-
-                elif method==2 and lp:
+                if method==1 and lp:
 
                     h = lp.pop()
                 
@@ -3767,7 +3744,7 @@ class varpot:
 
             return(ceros,me , va, sumw )
 
-        def importancesampling2(self, N=1000, method = 0, K=10):
+        def importancesampling2(self, N=1000, method = 0, K=15):
             
             borr = self.orden.copy()
             
@@ -3790,7 +3767,7 @@ class varpot:
 
               
 
-                if method==2 and lp:
+                if method==1 and lp:
 
                     h = lp.pop()
                 
@@ -3838,7 +3815,7 @@ class varpot:
             
             for j in range(N):
                 sol = []
-                pe = 1.0
+                pe = self.w
                 for i in range(len(borr)):
                     
                     var = borr[i]
@@ -3863,20 +3840,34 @@ class varpot:
                         nw *= h.tabla[0]
                         pw *= h.tabla[1]
 
-                  
-                      
+           
                     if nw+pw>0:
                         value = choices([-var,var], weights = [nw,pw])
                         sol.append(value[0])
 
                     else:
                         sol.append(-var)
-                    pe *= (nw+pw)
-                      
+                        pe = 0.0
+                        break
+                    
+                    
 
+                    pe *= (nw+pw)
+                    
+
+                    
+
+
+            
+                      
+                if math.isinf(pe):
+                    print("peso infitinito peso integrado")
                         
                 if math.isnan(pe):
                     pe = 0.0
+
+                
+                
 
                 # print(pe)                 
                 for x in sol:
@@ -3890,8 +3881,8 @@ class varpot:
 
             print(self.w,pesos)
             
-            pesos = pesos*self.w
-            pesos2 = pesos2 * self.w*self.w
+            pesos = pesos
+            pesos2 = pesos2 
 
 
             me = pesos/N

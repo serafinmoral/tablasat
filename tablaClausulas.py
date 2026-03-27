@@ -548,6 +548,13 @@ class nodoTabla:
 
         result.tabla[np.isnan(result.tabla)] = 0
 
+        if np.any(np.isinf(result.tabla)):
+            print("probl3ema")
+
+
+
+        
+    
 
             
 

@@ -294,7 +294,7 @@ def borradocontablas(archivolee, Q=[5,10,15,20,25,30],Mejora=[False], Previo=[Tr
 def experimentimportance(archivolee, Q=30, archivogenera="salida.csv"):
     reader=open(archivolee,"r")
     writer=open(archivogenera,"w")
-    writer.write("Problema;Tcomputation;Tsampling;TTotal;Ceros;Pevidence;Variance;SAT\n")
+    writer.write("Problema;Tsampling;Tprev;Ceros;Pevidence;Variance\n")
     ttotal = 0
     # i=0
     for linea in reader:
@@ -317,7 +317,7 @@ def experimentimportance(archivolee, Q=30, archivogenera="salida.csv"):
             t4 = time()
 
 
-            cadena =  cadena + str(t4-t3) + "\n"   
+            cadena1 =  cadena + str(t4-t3) + ";"   
 
             # number = len(res.count())
             # print(number)
@@ -327,32 +327,27 @@ def experimentimportance(archivolee, Q=30, archivogenera="salida.csv"):
             t5 = time()
             (ceros,medi,var, weights)= res0.importancesampling(method = 0)
             t6 = time()
-            cadena = cadena + str(t6-t5) + ";" + str(t6-t5+t4-t3)  + ";" + str(ceros) + ";" + str(medi) +  ";" + str(var) + "\n"
+            cadena = cadena1 + str(t6-t5) + ";" + str(t4-t3)  + ";" + str(ceros) + ";" + str(medi) +  ";" + str(var) + "\n"
             res1 = res.copia()
             
 
             t5 = time()
             (ceros,medi,var, weights)= res1.importancesampling(method = 1)
             t6 = time()
-            cadena = cadena + str(t6-t5) + ";" + str(t6-t5+t4-t3)  + ";" + str(ceros) + ";" + str(medi) +  ";" + str(var) + "\n"
+            cadena = cadena1 + str(t6-t5) + ";" + str(t4-t3)  + ";" + str(ceros) + ";" + str(medi) +  ";" + str(var) + "\n"
 
-            res2 = res.copia()
-            t5 = time()
-            (ceros,medi,var, weights)= res2.importancesampling(method = 2)
-            t6 = time()
-            cadena = cadena + str(t6-t5) + ";" + str(t6-t5+t4-t3)  + ";" + str(ceros) + ";" + str(medi) +  ";" + str(var) + "\n"
-
+         
             res3 = res.copia()
             t5 = time()
             (ceros,medi,var, weights)= res3.importancesampling2(method = 0)
             t6 = time()
-            cadena = cadena + str(t6-t5) + ";" + str(t6-t5+t4-t3)  + ";" + str(ceros) + ";" + str(medi) +  ";" + str(var) + "\n"
+            cadena = cadena1 + str(t6-t5) + "; 0.0 ;" + str(ceros) + ";" + str(medi) +  ";" + str(var) + "\n"
 
             res4 = res.copia()
             t5 = time()
-            (ceros,medi,var, weights)= res4.importancesampling2(method = 2)
+            (ceros,medi,var, weights)= res4.importancesampling2(method = 1)
             t6 = time()
-            cadena = cadena + str(t6-t5) + ";" + str(t6-t5+t4-t3)  + ";" + str(ceros) + ";" + str(medi) +  ";" + str(var) + "\n"
+            cadena = cadena1 + str(t6-t5) + "; 0.0 ;" + str(ceros) + ";" + str(medi) +  ";" + str(var) + "\n"
             writer.write(cadena)
             print(cadena)
 
@@ -364,5 +359,5 @@ def experimentimportance(archivolee, Q=30, archivogenera="salida.csv"):
 # computetreewidhts("ListaCNF_Experimento.txt")
 # borradocontablas("entrada",[20],[False],[True],[False],"prueba05.txt")
 # borradofacil("entrada",[5,10,15,20,25],[False],[False],[True],"resultado.txt")
-experimentimportance("entrada",20,"outimportanceb.txt")
+experimentimportance("entrada",20,"outimportance.txt")
 
