@@ -329,12 +329,16 @@ def experimentimportance(archivolee, Q=30, archivogenera="salida.csv"):
             t6 = time()
             cadena = cadena1 + str(t6-t5) + ";" + str(t4-t3)  + ";" + str(ceros) + ";" + str(medi) +  ";" + str(var) + "\n"
             res1 = res.copia()
-            
+            print(cadena)
+            writer.write(cadena)
+
 
             t5 = time()
             (ceros,medi,var, weights)= res1.importancesampling(method = 1)
             t6 = time()
             cadena = cadena1 + str(t6-t5) + ";" + str(t4-t3)  + ";" + str(ceros) + ";" + str(medi) +  ";" + str(var) + "\n"
+            print(cadena)
+            writer.write(cadena)
 
          
             res3 = res.copia()
@@ -342,12 +346,17 @@ def experimentimportance(archivolee, Q=30, archivogenera="salida.csv"):
             (ceros,medi,var, weights)= res3.importancesampling2(method = 0)
             t6 = time()
             cadena = cadena1 + str(t6-t5) + "; 0.0 ;" + str(ceros) + ";" + str(medi) +  ";" + str(var) + "\n"
+            writer.write(cadena)
+
+            print(cadena)
+
 
             res4 = res.copia()
             t5 = time()
             (ceros,medi,var, weights)= res4.importancesampling2(method = 1)
             t6 = time()
             cadena = cadena1 + str(t6-t5) + "; 0.0 ;" + str(ceros) + ";" + str(medi) +  ";" + str(var) + "\n"
+            print(cadena)
             writer.write(cadena)
             print(cadena)
 

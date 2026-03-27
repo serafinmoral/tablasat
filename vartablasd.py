@@ -3560,8 +3560,8 @@ class varpot:
                          listprobb.append(p)
 
             for v in borr:
+                # print("borro " + str(v))
                 ll = self.get(v) + self.getd(v)
-                ld = self.getd(v)
                 listlogic.append(ll)
                 for p in ll:
                     self.eliminar(p)
@@ -3628,7 +3628,7 @@ class varpot:
             
             
             for j in range(N):
-
+                # print(j)
                 sol = []
                 pe = 1.0
                 for i in range(len(borr)):
